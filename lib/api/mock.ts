@@ -28,7 +28,7 @@ import type { Offer } from "@/types";
 import { clientConfig } from "@/config/clients";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { CUSTOM_PHOTOS_DIR, mutate, read } from "./mock-db";
+import { CUSTOM_PHOTOS_DIR, mutate, PAYMENT_PROOFS_DIR, read } from "./mock-db";
 import { mockCustomerApi } from "./mock-customers";
 
 import productsJson from "@/mock-data/products.json";
@@ -290,7 +290,8 @@ export const mockApi: StorefrontApi = {
       const n = db.orderKeys[req.idempotencyKey];
       return n ? db.orders.find((o) => o.number === n) : undefined;
     });
-    if (previous) return { ok: true, orderNumber: previous.number, total: previous.total };
+    // Sample mode has no secret keys: any key opens the order page
+    if (previous) return { ok: true, orderNumber: previous.number, orderKey: "sample", total: previous.total };
 
     const [{ products }, { goldPrices, coupons, options }] = await Promise.all([catalog(), pricing()]);
     const quote = buildQuote({ request: req, products, goldPrices, options, coupons, currency: clientConfig.currency });
@@ -387,10 +388,32 @@ export const mockApi: StorefrontApi = {
     });
     console.log(`[mock] order ${number} placed — total ${order.total} ${order.currency}`);
     // A real card payment would return the payment gateway page here (paymentRedirectUrl)
-    return delay({ ok: true, orderNumber: number, total: order.total }, 500);
+    return delay({ ok: true, orderNumber: number, orderKey: "sample", total: order.total }, 500);
   },
 
   getOrder: (number) => delay(read((db) => db.orders.find((o) => o.number === number) ?? null)),
+
+  // Transfer screenshot (sample mode: any key opens the order). Same rules as backend shop/orders_payment_proof.py
+  uploadPaymentProof: async (number, _key, photo) => {
+    type Stored = { at: string; file?: string };
+    const result = mutate((db) => {
+      const order = db.orders.find((o) => o.number === number) as (Order & { paymentProofs?: Stored[] }) | undefined;
+      if (!order) return { ok: false as const, error: "not_found" as const };
+      const waiting = ["pending", "awaiting_transfer", "failed"].includes(order.paymentStatus);
+      if (order.paymentMethod !== "bank_transfer" || order.status === "cancelled" || order.status === "returned" || !waiting)
+        return { ok: false as const, error: "not_allowed" as const };
+      const proofs = order.paymentProofs ?? [];
+      if (proofs.length >= 3) return { ok: false as const, error: "too_many" as const };
+      const ext = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" } as const;
+      const file = `${order.number}-${proofs.length + 1}-${crypto.randomUUID().slice(0, 6)}.${ext[photo.type]}`;
+      mkdirSync(PAYMENT_PROOFS_DIR, { recursive: true });
+      writeFileSync(path.join(PAYMENT_PROOFS_DIR, file), photo.data);
+      order.paymentProofs = [...proofs, { at: new Date().toISOString(), file }];
+      if (order.paymentStatus === "pending") order.paymentStatus = "awaiting_transfer";
+      return { ok: true as const, count: order.paymentProofs.length };
+    });
+    return delay(result, 300);
+  },
 
   // ===== CUSTOMER ACCOUNTS ===== (lib/api/mock-customers.ts)
   ...mockCustomerApi,

@@ -110,34 +110,55 @@ export async function ProductCard({ product, goldPrices, locale, dict }: Props) 
   const boxStyle = card.imageBackground ? { background: card.imageBackground } : undefined;
   // White product photos melt into the picture background (Product cards → "Blend white photos")
   const blend = card.blendImage && "mix-blend-multiply";
+  // Space around the piece inside its tile (Product cards → "Space around the piece"): the photo is drawn smaller, whole
+  const pad = card.imagePadding;
+  // (an inner frame inset by that %, because a "fill" picture always takes the whole frame it sits in)
+  const frame = (children: React.ReactNode) => (pad ? <div className="absolute" style={{ inset: `${pad}%` }}>{children}</div> : children);
+  const fit = pad ? "object-contain" : "object-cover";
+  // Colour after the name, soft (Product cards → "Colour after the name"): "Nile Bracelet — Yellow gold"
+  const colour = card.colourAfterName ? t(product.subtitle, locale) : "";
+  const baseName = colour && name.endsWith(` — ${colour}`) ? name.slice(0, -(colour.length + 3)) : name;
 
   return (
-    <Link href={localePath(locale, `/products/${product.slug}`)} className={cn("group block", center && "text-center")}>
+    // data-reveal: rises in when it comes onto the screen (Theme & design → Layout → Motion)
+    <Link href={localePath(locale, `/products/${product.slug}`)} data-reveal="card" className={cn("group block", center && "text-center")}>
       {/* Dots under the picture (Product cards → "Dots under the picture"): every picture of the product */}
       {card.imageDots && product.images.length > 0 ? (
-        <CardImages images={product.images} alt={name} imageClass={cn(blend, soldOverlay && so.grayscale && "grayscale")} boxClass={boxClass} boxStyle={boxStyle} dotsLabel={name}>
+        <CardImages images={product.images} alt={name} imageClass={cn(blend, pad && "!object-contain", soldOverlay && so.grayscale && "grayscale")} inset={pad} boxClass={boxClass} boxStyle={boxStyle} dotsLabel={name}>
           {overlays}
         </CardImages>
       ) : (
       <div className={boxClass} style={boxStyle}>
+        {frame(
+          <>
         {image && (
-          <Image
-            src={image.url}
-            alt={name}
-            fill
-            sizes="(max-width: 768px) 50vw, 25vw" quality={90}
-            className={cn("object-cover transition-all duration-500", second ? "group-hover:opacity-0" : "group-hover:scale-105", soldOverlay && so.grayscale && "grayscale", blend)}
-          />
+              <Image
+                src={image.url}
+                alt={name}
+                fill
+                sizes="(max-width: 768px) 50vw, 25vw" quality={90}
+                className={cn(fit, "transition-all duration-500", second ? "group-hover:opacity-0" : "group-hover:scale-105", soldOverlay && so.grayscale && "grayscale", blend)}
+              />
+            )}
+            {/* Second picture, shown while the mouse is over the card */}
+            {second && <Image src={second.url} alt="" fill sizes="(max-width: 768px) 50vw, 25vw" quality={90} className={cn(fit, "opacity-0 transition-opacity duration-500 group-hover:opacity-100", blend)} />}
+          </>,
         )}
-        {/* Second picture, shown while the mouse is over the card */}
-        {second && <Image src={second.url} alt="" fill sizes="(max-width: 768px) 50vw, 25vw" quality={90} className={cn("object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100", blend)} />}
         {overlays}
       </div>
       )}
 
       <div className={cn("space-y-1", card.imageDots ? "mt-2" : "mt-3")}>
         {/* Quiet look (soft-grey price): regular-weight name on up to two lines, like the price */}
-        <h3 className={cn("line-clamp-2", center || card.priceColor === "muted" ? "font-normal" : "line-clamp-1 font-medium", NAME_SIZE[card.nameSize])}>{name}</h3>
+        <h3 className={cn("line-clamp-2", center || card.priceColor === "muted" ? "font-normal" : "line-clamp-1 font-medium", NAME_SIZE[card.nameSize])}>
+          {colour ? (
+            <>
+              {baseName} <span className="text-muted-foreground">— {colour}</span>
+            </>
+          ) : (
+            name
+          )}
+        </h3>
         {/* Hidden by CSS when the theme's product card is "minimal" */}
         <p className="product-card-details text-sm text-muted-foreground">
           {fill(dict.gold.karatLabel, { karat: product.karat })}

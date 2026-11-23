@@ -23,7 +23,6 @@
  */
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { CheckCircle2, Minus, Plus, ShoppingBag, Zap } from "lucide-react";
@@ -32,6 +31,7 @@ import type { Locale, LocalizedText, ProductButton, StockStatus, ThemeProductPag
 import { DEFAULT_PRODUCT_PAGE, productButtonCss } from "@/lib/theme-chrome";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { PriceBreakdown } from "@/lib/pricing";
+import Link from "next/link";
 import { useCartStore } from "@/stores/cart-store";
 import { fill, formatCardPrice, formatPrice, formatWeight } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -95,6 +95,7 @@ export function ProductPurchase({ locale, labels, product, variants, currency, s
   const [added, setAdded] = useState<"added" | "max" | null>(null);
 
   const addToCart = useCartStore((s) => s.add);
+  const openCart = useCartStore((s) => s.openCart);
   const inCart = useCartStore((s) => s.items.find((i) => i.variantId === variantId)?.quantity ?? 0);
 
   const variant = useMemo(() => variants.find((v) => v.id === variantId) ?? variants[0], [variants, variantId]);
@@ -147,8 +148,12 @@ export function ProductPurchase({ locale, labels, product, variants, currency, s
       setAdded("max");
       return;
     }
-    setAdded("added");
     setQty(1);
+    // Dashboard → Product page → Bag: open the drawer over the page, or show the small "Added · View bag" note
+    if (look.bag.mode === "drawer" && look.bag.autoOpen) {
+      setAdded(null);
+      openCart();
+    } else setAdded("added");
   }
 
   /** BUY NOW: add it (when it is already in the cart at its limit, keep what is there) and go to checkout */
@@ -362,16 +367,22 @@ export function ProductPurchase({ locale, labels, product, variants, currency, s
         </div>
       )}
 
-      {/* ===== CONFIRMATION after adding ===== */}
+      {/* ===== After adding: the bag drawer opens (components/cart/CartDrawer.tsx), or this note when the dashboard turned that off ===== */}
       {added === "added" && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800" role="status">
           <span className="flex items-center gap-2">
             <CheckCircle2 className="size-5" />
             {labels.addedToCart}
           </span>
-          <Link href={cartHref} className="font-semibold underline underline-offset-4">
-            {labels.viewCart}
-          </Link>
+          {look.bag.mode === "drawer" ? (
+            <button type="button" onClick={openCart} className="font-semibold underline underline-offset-4">
+              {labels.viewCart}
+            </button>
+          ) : (
+            <Link href={cartHref} className="font-semibold underline underline-offset-4">
+              {labels.viewCart}
+            </Link>
+          )}
         </div>
       )}
       {added === "max" && (

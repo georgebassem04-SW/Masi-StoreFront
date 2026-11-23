@@ -40,5 +40,5 @@ export function HeroSection({ section, locale, dict }: SectionProps<HeroSectionT
       };
     });
   if (!slides.length) return null;
-  return <HeroSlider slides={slides} height={section.data.height ?? "md"} look={section.data.look ?? "classic"} labels={{ previous: dict.common.previous, next: dict.common.next, slide: dict.common.slide }} />;
+  return <HeroSlider slides={slides} height={section.data.height ?? "md"} look={section.data.look ?? "classic"} textWidth={section.data.textWidth} labels={{ previous: dict.common.previous, next: dict.common.next, slide: dict.common.slide }} />;
 }

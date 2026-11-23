@@ -139,7 +139,8 @@
       column-gap: 1.5rem;
     }
   }
-  @media (min-width: 1280px) {
+  /* Desktop: the products per row chosen in Theme & design → Layout (from 1024px wide) */
+  @media (min-width: 1024px) {
     .product-grid {
       grid-template-columns: repeat(var(--grid-cols, 4), minmax(0, 1fr));
     }
@@ -224,20 +225,22 @@
 .site-header {
   transition: background-color 0.25s, color 0.25s, box-shadow 0.25s;
 }
-body:has(main > [data-overlay-hero]:first-child) .site-header[data-overlay="true"]:not([data-scrolled="true"]) {
+body:has(:is(main > [data-overlay-hero]:first-child, main > [data-hero-wrap]:first-child > [data-overlay-hero])) .site-header[data-overlay="true"]:not([data-scrolled="true"]) {
   background-color: var(--header-overlay-bg, transparent);
   color: var(--header-overlay-fg, var(--header-fg));
   box-shadow: none;
   border-bottom-color: transparent !important;
+  /* No line at all over the picture: even a see-through border still showed as a dark hairline */
+  border-bottom-width: 0 !important;
 }
-body:has(main > [data-overlay-hero]:first-child) .site-header[data-overlay="true"][data-blur="true"]:not([data-scrolled="true"]) {
+body:has(:is(main > [data-overlay-hero]:first-child, main > [data-hero-wrap]:first-child > [data-overlay-hero])) .site-header[data-overlay="true"][data-blur="true"]:not([data-scrolled="true"]) {
   backdrop-filter: blur(10px);
 }
-body:has(.site-header[data-overlay="true"]) main > [data-overlay-hero]:first-child {
+body:has(.site-header[data-overlay="true"]) :is(main > [data-overlay-hero]:first-child, main > [data-hero-wrap]:first-child > [data-overlay-hero]) {
   margin-top: calc(-1 * var(--header-h, 0px));
 }
 /* Title banners keep their text clear of the header */
-body:has(.site-header[data-overlay="true"]) main > [data-overlay-hero="pad"]:first-child {
+body:has(.site-header[data-overlay="true"]) :is(main > [data-overlay-hero="pad"]:first-child, main > [data-hero-wrap]:first-child > [data-overlay-hero="pad"]) {
   padding-top: var(--header-h, 0px);
 }
 /*
@@ -257,13 +260,13 @@ html[data-sticky-header="false"] .site-header {
  *   - light logo over the picture ("logo-on-dark"), the normal logo after scrolling / on other pages
  *   - soft dark shade from the top so white icons stay readable (data-gradient)
  */
-body:has(main > [data-overlay-hero]:first-child) .site-header[data-overlay="true"]:not([data-scrolled="true"]) .logo-on-dark {
+body:has(:is(main > [data-overlay-hero]:first-child, main > [data-hero-wrap]:first-child > [data-overlay-hero])) .site-header[data-overlay="true"]:not([data-scrolled="true"]) .logo-on-dark {
   display: block;
 }
-body:has(main > [data-overlay-hero]:first-child) .site-header[data-overlay="true"]:not([data-scrolled="true"]) .logo-normal {
+body:has(:is(main > [data-overlay-hero]:first-child, main > [data-hero-wrap]:first-child > [data-overlay-hero])) .site-header[data-overlay="true"]:not([data-scrolled="true"]) .logo-normal {
   display: none;
 }
-body:has(main > [data-overlay-hero]:first-child) .site-header[data-overlay="true"][data-gradient="true"]:not([data-scrolled="true"]) {
+body:has(:is(main > [data-overlay-hero]:first-child, main > [data-hero-wrap]:first-child > [data-overlay-hero])) .site-header[data-overlay="true"][data-gradient="true"]:not([data-scrolled="true"]) {
   background-image: linear-gradient(to bottom, rgb(10 14 12 / 0.34), rgb(10 14 12 / 0));
 }
 
@@ -307,4 +310,116 @@ html[lang="ar"] .accent {
 /* Hero "editorial" look: the italic words are a touch bigger than the small capitals around them */
 .hero-editorial .accent {
   font-size: 1.22em;
+}
+
+/* ===== ARABIC TYPE (dashboard → Theme & design → Fonts → "Arabic pages") =====
+ * Arabic letters join. Letter spacing pulls them apart and CAPITALS rules mean nothing in Arabic,
+ * so on Arabic pages both are switched off everywhere ("Clean spacing", on by default).
+ * Arabic also gets more line spacing and a bigger size for the tiniest labels.
+ *   --ar-line-height / --ar-small-size come from lib/theme.ts (typography.arabicLineHeight / arabicSmallSize)
+ */
+html[lang="ar"][data-ar-spacing="true"] *,
+html[lang="ar"][data-ar-spacing="true"] *::before,
+html[lang="ar"][data-ar-spacing="true"] *::after {
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+html[lang="ar"] body {
+  line-height: var(--ar-line-height, 1.8);
+}
+/* Arabic pages: anything drawn with the "heading font" (search field, side menu, bag, accent words…) uses the
+   ARABIC heading font, not the English one */
+html[lang="ar"] {
+  --font-heading: var(--font-arabic-display), var(--font-arabic), serif;
+}
+html[lang="ar"] :is(.text-\[9px\], .text-\[10px\], .text-\[11px\], .text-xs, .link-line) {
+  font-size: var(--ar-small-size, 13px);
+}
+
+/* ===== SCROLL REVEAL + PICTURE ZOOM (dashboard → Theme & design → Layout → Motion) =====
+ * Elements with data-reveal start a little lower and transparent, and rise into place when
+ * components/common/ScrollReveal.tsx adds "is-in". Only while <html data-reveal-on="true"> and after the
+ * script is ready ("reveal-ready"), so nothing is ever hidden if JavaScript is off or slow.
+ * --reveal-distance / --reveal-duration / --reveal-stagger come from lib/theme.ts.
+ */
+html.reveal-ready[data-reveal-on="true"] [data-reveal] {
+  opacity: 0;
+  transform: translateY(var(--reveal-distance, 26px));
+  transition:
+    opacity var(--reveal-duration, 0.9s) cubic-bezier(0.16, 1, 0.3, 1),
+    transform var(--reveal-duration, 0.9s) cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--i, 0) * var(--reveal-stagger, 0.08s));
+}
+html.reveal-ready[data-reveal-on="true"] [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+/* Pictures that fill their frame: fade and rise inside the frame instead of sliding out of it */
+html.reveal-ready[data-reveal-on="true"] img[data-reveal] {
+  transform: translateY(calc(var(--reveal-distance, 26px) * 0.5)) scale(1.03);
+}
+html.reveal-ready[data-reveal-on="true"] img[data-reveal].is-in {
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-reveal-on="true"] [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+/* Product pictures zoom in slightly on mouse-over */
+html[data-hover-zoom="true"] [data-card-image] {
+  overflow: hidden;
+}
+html[data-hover-zoom="true"] [data-card-image] img {
+  transition:
+    opacity 0.5s,
+    transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+html[data-hover-zoom="true"] .group:hover [data-card-image] img {
+  transform: scale(1.04);
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-hover-zoom="true"] .group:hover [data-card-image] img {
+    transform: none;
+  }
+}
+
+/* PAGE TITLES — "editorial" look (Theme & design → Layout → Page titles): light title font, spaced capitals, centred */
+html[data-page-title="editorial"] .page-title {
+  font-family: var(--font-heading);
+  font-weight: 300;
+  text-align: center;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 2.5rem;
+}
+
+/*
+ * STORY COVER (page title block → look "Magazine cover", components/sections/PageHeroCover.tsx):
+ * the giant word scales with the screen; chapter lines use the heading font, light.
+ */
+.cover-word {
+  /* Latin letters (MASI) always in the brand display face, also on Arabic pages; Arabic letters fall back to the heading font */
+  font-family: var(--font-display), var(--font-heading);
+  font-weight: 300;
+  line-height: 0.82;
+  letter-spacing: -0.01em;
+  font-size: clamp(5.5rem, 24vw, 22rem);
+}
+.cover-chapter {
+  font-family: var(--font-heading);
+  font-weight: 300;
+  line-height: 1.15;
+}
+
+/*
+ * HEADINGS (dashboard → Theme & design → Layout → Page titles = "Editorial"): no bold headings in the pages —
+ * headings written bold in the code (Cart, Contact, page banners…) follow the dashboard's "Heading weight"
+ * instead (Theme & design → Fonts; "Light" = the MASI look).
+ */
+html[data-page-title="editorial"] main :is(h1, h2, h3):is(.font-bold, .font-semibold) {
+  font-weight: var(--heading-weight, 400);
 }

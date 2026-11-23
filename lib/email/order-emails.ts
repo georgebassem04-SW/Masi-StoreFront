@@ -22,7 +22,7 @@ export interface OrderEmailsResult {
 }
 
 export async function sendOrderEmails(orderNumber: string, options: { staff?: boolean } = { staff: true }): Promise<OrderEmailsResult | null> {
-  const order = await api.getOrder(orderNumber);
+  const order = await api.getOrder(orderNumber, { server: true });
   if (!order) return null;
 
   const locale: Locale = order.locale ?? clientConfig.defaultLocale;
@@ -42,7 +42,7 @@ export async function sendOrderEmails(orderNumber: string, options: { staff?: bo
   let customer: OrderEmailsResult["customer"] = "skipped_no_email";
   if (order.customer.email) {
     const mail = orderConfirmationEmail(input);
-    customer = await sendEmail({ to: order.customer.email, ...mail, replyTo: contact.email });
+    customer = await sendEmail({ to: order.customer.email, ...mail, replyTo: contact.email || undefined });
   }
 
   // Store team

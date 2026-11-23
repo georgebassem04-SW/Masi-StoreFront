@@ -37,6 +37,8 @@ import { iconFor } from "@/lib/icon-library";
 
 const SOCIAL_ICONS = { instagram: FaInstagram, facebook: FaFacebookF, tiktok: FaTiktok, x: FaXTwitter, youtube: FaYoutube, snapchat: FaSnapchat };
 const SPACING = { compact: "py-6", normal: "py-8", spacious: "py-14" } as const;
+/** Top part (social icons, newsletter, divider): space above and between (Footer → Spacing → "Top part") */
+const TOP_SPACE = { compact: "gap-6 pt-10", normal: "gap-8 pt-12", spacious: "gap-10 pt-16 md:pt-20" } as const;
 const GRID = ["", "", "md:grid-cols-2", "md:grid-cols-3", "md:grid-cols-2 lg:grid-cols-4"] as const;
 const LOGO_SQUARE = { sm: "size-7", md: "size-8", lg: "size-12" } as const;
 const LOGO_WIDE = { sm: "h-9 max-w-[130px]", md: "h-12 max-w-[160px]", lg: "h-16 max-w-[220px]" } as const;
@@ -160,21 +162,46 @@ export async function Footer({ locale, dict }: { locale: Locale; dict: Dictionar
     const items = g.links.filter((l) => l.href && t(l.label, locale));
     const text = t(g.text, locale);
     if (!t(g.title, locale) && !items.length && !text) return null;
+    const list =
+      items.length > 0 ? (
+        <ul className={centered ? "flex flex-wrap justify-center gap-x-6 gap-y-2" : caps ? "space-y-3.5 text-[13px]" : "space-y-2"}>
+          {items.map((l) => (
+            <li key={l.href + t(l.label, locale)}>
+              <Link href={p(l.href)} className={cn(link, caps ? "opacity-75 hover:no-underline hover:opacity-100" : "opacity-80 hover:opacity-100")}>
+                {t(l.label, locale)}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : null;
+    const body = (
+      <>
+        {list}
+        {text && <p className={cn("whitespace-pre-line opacity-80", items.length > 0 && "mt-3")}>{text}</p>}
+      </>
+    );
+    // Phones (Footer → "Fold the columns on phones"): tap the title to open the column; computers: as usual
+    if (f.mobileAccordion && t(g.title, locale)) {
+      return (
+        <div key={`group-${i}`}>
+          <details className="group/acc md:hidden" style={{ borderBottom: line }}>
+            <summary className="flex cursor-pointer list-none items-center justify-between py-4 [&::-webkit-details-marker]:hidden">
+              <Heading>{t(g.title, locale)}</Heading>
+              <span aria-hidden className="text-lg leading-none transition-transform group-open/acc:rotate-45">+</span>
+            </summary>
+            <div className="pb-5">{body}</div>
+          </details>
+          <div className="hidden md:block">
+            <Heading>{t(g.title, locale)}</Heading>
+            {body}
+          </div>
+        </div>
+      );
+    }
     return (
       <div key={`group-${i}`}>
         {t(g.title, locale) && <Heading>{t(g.title, locale)}</Heading>}
-        {items.length > 0 && (
-          <ul className={centered ? "flex flex-wrap justify-center gap-x-6 gap-y-2" : caps ? "space-y-3.5 text-[13px]" : "space-y-2"}>
-            {items.map((l) => (
-              <li key={l.href + t(l.label, locale)}>
-                <Link href={p(l.href)} className={cn(link, caps ? "opacity-75 hover:no-underline hover:opacity-100" : "opacity-80 hover:opacity-100")}>
-                  {t(l.label, locale)}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-        {text && <p className={cn("whitespace-pre-line opacity-80", items.length > 0 && "mt-3")}>{text}</p>}
+        {body}
       </div>
     );
   });
@@ -266,19 +293,19 @@ export async function Footer({ locale, dict }: { locale: Locale; dict: Dictionar
     <footer className={cn("mt-auto text-footer-foreground", !f.transparent && "bg-footer")} style={{ borderTop: f.borderTop ? line : undefined }}>
       {/* ===== TOP ===== social icons + newsletter + divider picture (Footer → Social "At the top" / Newsletter / Divider) */}
       {(topSocial || newsletter || f.divider) && (
-        <div className={cn(container, "flex flex-col items-center gap-10 pt-16 md:pt-20")}>
+        <div className={cn(container, "flex flex-col items-center", TOP_SPACE[f.topSpace])}>
           {topSocial && socialIcons(true)}
           {newsletter && <NewsletterForm {...newsletter} />}
           {f.divider && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={f.divider} alt="" loading="lazy" className="mt-6 w-full max-w-[760px] mix-blend-multiply" />
+            <img src={f.divider} alt="" loading="lazy" className={cn("w-full mix-blend-multiply", f.topSpace === "spacious" && "mt-6")} style={{ maxWidth: f.dividerWidth }} />
           )}
         </div>
       )}
 
       {shown.length > 0 && (
         <div className={cn(container, SPACING[f.spacing])}>
-          <div className={cn(centered ? "flex flex-col items-center gap-8" : cn("grid gap-8", GRID[Math.min(shown.length, 4)]), center && "text-center")}>
+          <div className={cn(centered ? "flex flex-col items-center gap-8" : cn("grid", f.mobileAccordion ? "gap-0 md:gap-8" : "gap-8", GRID[Math.min(shown.length, 4)]), center && !f.mobileAccordion && "text-center", center && f.mobileAccordion && "md:text-center")}>
             {shown.map((x) => (
               <div key={x.key} className={centered ? "max-w-2xl" : undefined}>
                 {x.node}

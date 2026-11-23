@@ -23,6 +23,21 @@ const onlineDashboard = (() => {
   }
 })();
 
+/**
+ * The Django backend (NEXT_PUBLIC_API_BASE_URL, e.g. https://api.masionline.com) serves product photos and uploaded images.
+ * Allowed as an image host when it is set; local addresses also need dangerouslyAllowLocalIP.
+ */
+const catalogBackend = (() => {
+  try {
+    const u = new URL(process.env.NEXT_PUBLIC_API_BASE_URL || "");
+    if (!/^https?:$/.test(u.protocol)) return null;
+    return { protocol: u.protocol.slice(0, -1) as "http" | "https", hostname: u.hostname, ...(u.port ? { port: u.port } : {}) };
+  } catch {
+    return null;
+  }
+})();
+const localBackend = /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/.test(process.env.NEXT_PUBLIC_API_BASE_URL || "");
+
 /** Port of the dashboard on this computer (Masi: 3012), taken from DASHBOARD_URL */
 const localPort = (() => {
   try {
@@ -35,7 +50,7 @@ const localPort = (() => {
 const nextConfig: NextConfig = {
   reactCompiler: true,
   images: {
-    dangerouslyAllowLocalIP: localDashboard,
+    dangerouslyAllowLocalIP: localDashboard || localBackend,
     // Picture quality: 90 for jewellery photos and big pictures (sharper), 75 for the rest
     qualities: [75, 90],
     // Product images will come from the client's dashboard/CDN.
@@ -48,6 +63,10 @@ const nextConfig: NextConfig = {
       { protocol: "http", hostname: "localhost", port: localPort },
       // Images uploaded in the dashboard when it runs online (from DASHBOARD_URL)
       ...(onlineDashboard ? [onlineDashboard] : []),
+      // Photos served by the Django backend (NEXT_PUBLIC_API_BASE_URL)
+      ...(catalogBackend ? [catalogBackend] : []),
+      // The same backend under its other local name (localhost ⇄ 127.0.0.1)
+      ...(catalogBackend && localBackend ? [{ ...catalogBackend, hostname: catalogBackend.hostname === "localhost" ? "127.0.0.1" : "localhost" }] : []),
     ],
   },
 };

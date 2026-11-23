@@ -66,7 +66,7 @@ const ZONE_CLASS = { start: "justify-start", center: "justify-center", end: "jus
 export async function Header({ locale, dict, categories }: { locale: Locale; dict: Dictionary; categories: Category[] }) {
   // Site paths get the language in front ("/products" → "/ar/products"); "#…", "https://…", "tel:…" stay as they are
   const p = (path: string) => (path.startsWith("#") ? path : localePath(locale, path));
-  const [{ brand, header: h, darkMode }, menuPages, { contact }] = await Promise.all([getSiteTheme(), getMenuPages(), getStoreContact()]);
+  const [{ brand, header: h, darkMode, productPage }, menuPages, { contact }] = await Promise.all([getSiteTheme(), getMenuPages(), getStoreContact()]);
   const storeName = t(brand.name, locale);
 
   // Pages in the menu: exactly the ones picked in the dashboard (Header → Menu links), in that order;
@@ -178,7 +178,7 @@ export async function Header({ locale, dict, categories }: { locale: Locale; dic
   const asText = h.icons.display === "text";
   // Each part on its own, so it can also be placed freely (Positions)
   // Search bar look and words: dashboard → Header → Search bar ("" words = the dictionary's defaults)
-  const { placeholder: searchWords, buttonText: searchButton, ...searchStyle } = h.search;
+  const { placeholder: searchWords, buttonText: searchButton, popular: searchPopular, ...searchStyle } = h.search;
   const searchPart = (
     <HeaderSearch
       locale={locale}
@@ -187,7 +187,10 @@ export async function Header({ locale, dict, categories }: { locale: Locale; dic
       iconClass={icon}
       iconId={h.icons.set.search}
       asText={asText}
-      look={{ ...searchStyle, buttonText: t(searchButton, locale) }}
+      look={{ ...searchStyle, buttonText: t(searchButton, locale), popular: searchPopular.map((w) => t(w, locale)).filter(Boolean) }}
+      words={{ popular: dict.catalog.popular, pieces: dict.catalog.pieces, piecesOne: dict.catalog.piecesOne, close: dict.cart.close }}
+      // Turning mark while results load: Search bar picture → tab icon → logo
+      loaderSrc={h.search.loaderImage || brand.favicon || brand.logo}
     />
   );
   const languagePart = (
@@ -205,7 +208,7 @@ export async function Header({ locale, dict, categories }: { locale: Locale; dic
   );
   const cartPart = (
     <span className={cn("flex h-9 items-center justify-center", !asText && "w-9")}>
-      <CartButton href={p("/cart")} label={dict.nav.cart} iconId={h.icons.set.cart} iconClass={icon} asText={asText} />
+      <CartButton href={p("/cart")} label={dict.nav.cart} iconId={h.icons.set.cart} iconClass={icon} asText={asText} drawer={productPage.bag.mode === "drawer"} />
     </span>
   );
   const icons = (
@@ -219,6 +222,9 @@ export async function Header({ locale, dict, categories }: { locale: Locale; dic
     </div>
   );
 
+  // Side menu links: site paths get the language in front ("/products" → "/en/products"), others stay as they are
+  const sideLinks = (list: { label: { ar: string; en: string }; href: string }[]) =>
+    list.map((l) => ({ href: l.href.startsWith("/") || l.href.startsWith("#") ? p(l.href) : l.href, label: t(l.label, locale) })).filter((l) => l.href && l.label);
   const menuProps = {
       locale,
       storeName,
@@ -241,6 +247,13 @@ export async function Header({ locale, dict, categories }: { locale: Locale; dic
       phone: contact.phone,
       whatsapp: contact.whatsapp,
       menuIcon: h.icons.set.menu,
+      // Side menu look and links: dashboard → Header → Side menu
+      look: {
+        ...h.sideMenu,
+        items: sideLinks(h.sideMenu.items),
+        bottomLinks: sideLinks(h.sideMenu.bottomLinks),
+        note: t(h.sideMenu.note, locale),
+      },
   };
   const mobileMenu = <MobileMenu {...menuProps} />;
   // ☰ side menu on computers too (Positions → "Side menu button")

@@ -42,6 +42,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { OrderSummary } from "./OrderSummary";
 import { useCheckoutQuote } from "./useCheckoutQuote";
+import { PaymentAccountBox } from "./PaymentAccountBox";
 
 export interface PickupBranch {
   id: string;
@@ -180,7 +181,8 @@ export function CheckoutForm({ customer, locale, labels, productLabels, options,
         if (data.paymentRedirectUrl) {
           window.location.href = data.paymentRedirectUrl; // card payment page
         } else {
-          router.push(`${p("/order-success")}?order=${encodeURIComponent(data.orderNumber)}`);
+          const key = data.orderKey ? `&key=${encodeURIComponent(data.orderKey)}` : "";
+          router.push(`${p("/order-success")}?order=${encodeURIComponent(data.orderNumber)}${key}`);
         }
         return;
       }
@@ -382,6 +384,18 @@ export function CheckoutForm({ customer, locale, labels, productLabels, options,
             </div>
           )}
           {errors.paymentMethodId && <p className="text-sm text-destructive">{errorText(errors.paymentMethodId.message)}</p>}
+
+          {/* INSTAPAY / BANK TRANSFER: the account number to copy (dashboard → Shipping & payment) */}
+          {(() => {
+            const chosen = payments.find((m) => m.id === paymentMethodId);
+            if (!chosen?.accountNumber) return null;
+            return (
+              <div className="space-y-2">
+                <PaymentAccountBox accountNumber={chosen.accountNumber} accountName={chosen.accountName} appUrl={chosen.appUrl} labels={labels.payAccount} />
+                {chosen.askProof && <p className="text-sm text-muted-foreground">{labels.payAccount.proofLater}</p>}
+              </div>
+            );
+          })()}
 
           <Field id="notes" label={labels.notes} error={errorText(errors.notes?.message)}>
             <Textarea id="notes" rows={3} placeholder={labels.notesPlaceholder} className="min-h-20" {...register("notes")} />

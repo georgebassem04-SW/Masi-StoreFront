@@ -43,12 +43,15 @@ export function HeroSlider({
   labels,
   height = "md",
   look = "classic",
+  textWidth = 1040,
 }: {
   slides: HeroSlide[];
   labels: { previous: string; next: string; slide: string };
   height?: keyof typeof HEIGHT;
   /** "editorial" = quiet words at the bottom centre (dashboard → the slider → "Look") */
   look?: "classic" | "editorial";
+  /** "editorial": widest line of the small words, in px (dashboard → the slider → "Width of the words") */
+  textWidth?: number;
 }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -119,7 +122,7 @@ export function HeroSlider({
                 <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-6 pb-8 text-center md:pb-10" style={{ color: st.textColor || "#ffffff" }}>
                   {s.title && <Title className="sr-only">{s.title}</Title>}
                   {s.subtitle && (
-                    <p className="hero-editorial max-w-3xl text-[11px] uppercase leading-[1.55] tracking-[0.08em]">
+                    <p className="hero-editorial max-w-[92vw] text-[11px] uppercase leading-[1.55] tracking-[0.08em] md:text-[13px]" style={{ width: textWidth }}>
                       <Accent text={s.subtitle} />
                     </p>
                   )}

@@ -11,7 +11,7 @@ import type { LocalizedText } from "./common";
 
 /** Font keys. Each key must be declared in storefront/lib/fonts.ts (fonts are loaded at build time). */
 export const ARABIC_FONTS = ["cairo", "tajawal", "almarai", "ibmPlexArabic", "notoKufi", "elMessiri", "readexPro", "amiri", "notoNaskh", "markazi", "lateef", "arefRuqaa", "reemKufi", "alexandria", "changa"] as const;
-export const LATIN_FONTS = ["inter", "playfair", "cormorant", "montserrat", "lora", "poppins", "cinzel", "bodoniModa", "ebGaramond", "libreBaskerville", "marcellus", "dmSerifDisplay", "jost", "raleway", "helveticaNow", "arizonaFlare"] as const;
+export const LATIN_FONTS = ["inter", "playfair", "cormorant", "montserrat", "lora", "poppins", "cinzel", "bodoniModa", "ebGaramond", "libreBaskerville", "marcellus", "dmSerifDisplay", "jost", "raleway", "helveticaNow", "arizonaFlare", "juana"] as const;
 export type ArabicFont = (typeof ARABIC_FONTS)[number];
 export type LatinFont = (typeof LATIN_FONTS)[number];
 
@@ -68,11 +68,31 @@ export interface ThemeTypography {
   /** Base text size in px (all sizes on the site scale from this). 14–18 */
   baseSize: number;
   /** Heading boldness: 500 medium … 800 extra bold */
-  headingWeight: 400 | 500 | 600 | 700 | 800;
+  headingWeight: 300 | 400 | 500 | 600 | 700 | 800;
   /** Space between lines of body text, e.g. 1.6 */
   lineHeight: number;
   /** Letter spacing for English headings in em, e.g. 0 or 0.02 */
   headingLetterSpacing: number;
+  /**
+   * Arabic pages: no letter spacing and no CAPITALS rules anywhere (spacing pulls joined Arabic letters apart).
+   * Missing in older themes → on
+   */
+  arabicCleanSpacing: boolean;
+  /** Arabic body line spacing (Arabic needs more room than English), 1.4–2.2. Missing → 1.8 */
+  arabicLineHeight: number;
+  /** Arabic size of the smallest labels (tabs, small titles, tiny buttons), px 11–15. Missing → 13 */
+  arabicSmallSize: number;
+  /**
+   * Digits on Arabic pages (prices, weights, dates): "latn" = 1,234 (same as the texts typed in the dashboard)
+   * · "arab" = ١٬٢٣٤. One system for the whole Arabic site. Missing → "latn"
+   */
+  arabicDigits: "latn" | "arab";
+  /**
+   * The brand's own Arabic font (font files uploaded in the dashboard → Media library, .woff2 best).
+   * When "regular" is set, this ONE family is used for all Arabic text and headings, instead of the two lists above.
+   * "" = not used. Missing in older themes → not used
+   */
+  arabicBrandFont: { name: string; light: string; regular: string; medium: string; bold: string };
 }
 
 export interface ThemeLayout {
@@ -92,6 +112,44 @@ export interface ThemeLayout {
   gridColumns: 3 | 4 | 5;
   /** How a product card looks (dashboard → Theme & design → Layout → Product cards). Defaults: lib/theme-chrome.ts → DEFAULT_PRODUCT_CARD */
   card: ProductCardStyle;
+  /** Scroll animation and picture zoom (Theme & design → Layout → Motion). Missing in older themes → DEFAULT_MOTION */
+  motion: ThemeMotion;
+  /**
+   * Look of page titles (Products, search results, Cart…): "bold" = bold text (original) ·
+   * "editorial" = light title font, spaced capitals, centred ("MASI COLLECTION"). Missing → "bold"
+   */
+  pageTitle: "bold" | "editorial";
+  /**
+   * ONE price look for the whole website: cards, product page, search, bag, checkout, order emails
+   * (Theme & design → Layout → Prices). Empty sign = the normal currency look ("EGP 9,990"). Missing → that
+   */
+  priceFormat: PriceFormat;
+}
+
+/** "9,990 LE": own currency sign per language, before or after the number, with or without piastres */
+export interface PriceFormat {
+  symbol: LocalizedText;
+  position: "before" | "after";
+  decimals: boolean;
+}
+
+/** MOTION — used by storefront/components/common/ScrollReveal.tsx + app/globals.css ("SCROLL REVEAL") */
+export interface ThemeMotion {
+  /** Things rise into place as they come onto the screen */
+  reveal: boolean;
+  /**
+   * "elements" = each title, text, picture, card and store card rises on its own, one after another (like the MASI reference)
+   * "blocks"   = each section rises as one piece
+   */
+  mode: "elements" | "blocks";
+  /** How far they rise, px (0–60) */
+  distance: number;
+  /** How long the rise takes, seconds (0.3–1.5) */
+  duration: number;
+  /** Delay between cards of the same row, seconds (0–0.2) */
+  stagger: number;
+  /** Product pictures zoom in slightly (×1.04) when the mouse is on them */
+  hoverZoom: boolean;
 }
 
 /** PRODUCT CARD look — used by storefront/components/product/ProductCard.tsx */
@@ -130,6 +188,10 @@ export interface ProductCardStyle {
   blendImage: boolean;
   /** Price colour: the main colour, or soft grey like the text */
   priceColor: "primary" | "muted";
+  /** Space around the piece inside its picture tile, % of the tile (0–20). Pieces sit smaller, like the MASI design */
+  imagePadding: number;
+  /** The product's colour line after the name, soft and after a dash ("Nile Bracelet — Yellow gold") */
+  colourAfterName: boolean;
 }
 
 export interface SoldOutLook {
@@ -168,6 +230,16 @@ export interface ThemeBrand {
   logoShape?: "square" | "wide";
   /** Browser tab icon */
   favicon: string;
+  /**
+   * The DASHBOARD's own look (Theme & design → Brand & logo → "Dashboard"). Not used by the website.
+   *   adminTitle   — the bold line at the top of the dashboard menu (empty = "Store dashboard" / "لوحة التحكم")
+   *   adminLogo    — the small square picture next to it (empty = the store name's first letter)
+   *   adminFavicon — the dashboard's browser tab icon (empty = the website's tab icon)
+   * The line under the title and the tab names use the store name above.
+   */
+  adminTitle?: LocalizedText;
+  adminLogo?: string;
+  adminFavicon?: string;
   /** Picture shown when the site is shared on WhatsApp / social media */
   shareImage: string;
 }
@@ -177,6 +249,37 @@ export interface ChromeLink {
   label: LocalizedText;
   /** "/products", "/pages/about", "https://…", "tel:…", "mailto:…" */
   href: string;
+}
+
+/**
+ * SIDE MENU — the panel the ☰ button opens (dashboard → Header → Side menu).
+ * Used by storefront/components/layout/MobileMenu.tsx
+ */
+export interface ThemeSideMenu {
+  /**
+   * "utility"   = small links + search field + category buttons + account + phone (the original)
+   * "editorial" = large title-font links, numbered, with a quiet row of links at the bottom (MASI)
+   */
+  style: "utility" | "editorial";
+  /** Width of the panel on computers, in px (phones: almost the full width) */
+  width: 320 | 380 | 460 | 520;
+  /** Links of the editorial list, in order. Empty = the same links as the top menu */
+  items: ChromeLink[];
+  /** Small numbers 01, 02… before each editorial link */
+  numbered: boolean;
+  /** Editorial link size: md = 24px · lg = 30px · xl = 36px */
+  itemSize: "md" | "lg" | "xl";
+  /** Quiet links at the bottom of the editorial menu (Our Story · Stores · Account · Studio) */
+  bottomLinks: ChromeLink[];
+  /** Small words at the bottom end of the editorial menu ("EST · Cairo · 26"). Empty = hidden */
+  note: LocalizedText;
+  /** Language switch (bottom row in the editorial menu) */
+  showLanguage: boolean;
+  /** Utility menu parts: search field, category buttons, account links, phone / WhatsApp */
+  showSearch: boolean;
+  showCategories: boolean;
+  showAccount: boolean;
+  showContact: boolean;
 }
 
 /**
@@ -297,6 +400,8 @@ export interface ThemeHeader {
   };
   /** The search bar that opens under the header (dashboard → Header → Search bar) */
   search: HeaderSearchStyle;
+  /** The panel the ☰ button opens (missing in older themes → DEFAULT_SIDE_MENU) */
+  sideMenu: ThemeSideMenu;
   /** Strip above the header ("Free delivery this week") */
   announcement: {
     enabled: boolean;
@@ -319,8 +424,11 @@ export interface ThemeHeader {
  * Colours: "" = automatic from the site colours (field frame / button = main colour, button on hover = accent colour).
  */
 export interface HeaderSearchStyle {
-  /** "simple" = rounded field with a small magnifier · "boxed" = framed field + coloured search button + close (✕) button */
-  look: "simple" | "boxed";
+  /**
+   * "simple" = rounded field with a small magnifier · "boxed" = framed field + coloured search button + close (✕) button
+   * "panel"  = editorial panel under the header: large serif field with a line under it, popular words, results as you type
+   */
+  look: "simple" | "boxed" | "panel";
   /** "narrow" = centred, medium width · "full" = the whole width of the page */
   width: "narrow" | "full";
   /** Words in the field. "" = the default ("Search products…") */
@@ -341,6 +449,18 @@ export interface HeaderSearchStyle {
   /** The ✕ button that closes the bar ("boxed" only) */
   closeButton: boolean;
   closeColor: string;
+  /** Show matching pieces under the field while typing (Enter still opens the full results page) */
+  live: boolean;
+  /** How many pieces the live results show (4 = one row on computers, 8 = two rows) */
+  liveCount: 4 | 8;
+  /** Quick words under the field ("Rings", "Bridal"…). A click searches for that word. Empty list = hidden */
+  popular: LocalizedText[];
+  /** While results load: "monogram" = the brand mark turning · "spinner" = a thin circle */
+  loader: "monogram" | "spinner";
+  /** Picture for the turning mark. "" = the browser tab icon, then the logo */
+  loaderImage: string;
+  /** Thin circle around the magnifier in the header when the mouse is on it */
+  iconRing: boolean;
 }
 
 /** "drawer" = the ☰ button that opens the side menu, also on computers */
@@ -432,6 +552,12 @@ export interface ThemeFooter {
   newsletter: { show: boolean; placeholder: LocalizedText; button: LocalizedText; thanks: LocalizedText };
   /** A thin picture between the top part and the columns (e.g. a gold chain). "" = none */
   divider: string;
+  /** Width of that picture, px (240–1000). Missing → 760 */
+  dividerWidth: number;
+  /** Space above the social icons / newsletter and between them: compact · normal · spacious. Missing → spacious */
+  topSpace: "compact" | "normal" | "spacious";
+  /** Phones: the link columns fold into tap-to-open sections (Information / Shop Now / About Us). Missing → off */
+  mobileAccordion: boolean;
   /** The last line */
   bottom: {
     show: boolean;
@@ -506,6 +632,23 @@ export interface ProductButtonStyle {
 }
 
 /**
+ * BAG (cart) — dashboard → "Product page" → "Bag".
+ * Used by storefront/components/cart/CartDrawer.tsx, layout/CartButton.tsx and product/ProductPurchase.tsx
+ */
+export interface ThemeBag {
+  /** drawer = the bag slides in over the page · page = the bag icon opens the full /cart page (old behaviour) */
+  mode: "drawer" | "page";
+  /** Open the drawer by itself after "Add to bag" (off = a small "Added · View bag" note under the button) */
+  autoOpen: boolean;
+  /** Drawer width on computers, in px (phones always use the full width) */
+  width: 380 | 440 | 520;
+  /** Blur the page behind the open drawer */
+  blur: boolean;
+  /** Show the "Complimentary delivery & gift wrapping" line (its words: Theme & design → Texts → cart.deliveryNote) */
+  deliveryNote: boolean;
+}
+
+/**
  * PRODUCT PAGE — dashboard → "Product page" (sidebar). Used by storefront/app/[locale]/products/[slug]/page.tsx
  */
 export interface ThemeProductPage {
@@ -543,11 +686,31 @@ export interface ThemeProductPage {
   /** "Quantity" title with the − / + on its own line, above the buttons */
   quantityOwnRow: boolean;
   /** Photos: big photo + small photos under it, or all photos one under the other */
-  gallery: "thumbs" | "stack";
+  gallery: "thumbs" | "stack" | "grid";
   /** Line between the price and the choices */
   divider: boolean;
   /** Button icons after the text ("Add To Cart 👜") instead of before it */
   iconEnd: boolean;
+  /** The bag: drawer or page, opens by itself, width… (see ThemeBag) */
+  bag: ThemeBag;
+  /**
+   * "classic" = the original page (big name, price, buttons; description and specifications under the photos)
+   * "maison"  = like the MASI design: name in capitals, colour in italic, description, "Product description" list,
+   *             size list, wishlist heart, returns line and folding sections (details, materials, care, shipping)
+   */
+  layout: "classic" | "maison";
+  /** "Size guide" link next to the sizes ("" = hidden). Maison look */
+  sizeGuideUrl: string;
+  /** Heart button next to "Add to bag" (saves the piece in the visitor's wishlist). Maison look */
+  wishlist: boolean;
+  /** "Complimentary returns and exchanges" line under the button (its words: Texts → product.returnsLine). Maison look */
+  returnsLine: boolean;
+  /** "Also available in": the same piece in other colours (products with the same "Group code"). Maison look */
+  alsoAvailable: boolean;
+  /** Folding section "Product Care", the same for every piece ("" = hidden). Maison look */
+  careText: LocalizedText;
+  /** Folding section "Shipping & Return", the same for every piece ("" = hidden). Maison look */
+  shippingText: LocalizedText;
 }
 
 export interface SiteTheme {

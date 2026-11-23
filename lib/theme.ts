@@ -40,6 +40,21 @@ const css = (vars: Record<string, string>) =>
     .map(([k, v]) => `${k}:${v};`)
     .join("");
 
+/**
+ * The brand's own Arabic font (dashboard → Theme & design → Fonts → Arabic pages → Brand Arabic font).
+ * One family for all Arabic text and headings. The file addresses were checked in lib/site-theme.ts.
+ */
+function brandArabicFont(theme: SiteTheme): string {
+  const f = theme.typography.arabicBrandFont;
+  if (!f.regular) return "";
+  const faces = ([["light", 300], ["regular", 400], ["medium", 500], ["bold", 700]] as const)
+    .filter(([k]) => f[k])
+    .map(([k, w]) => `@font-face{font-family:"Brand Arabic";src:url("${f[k]}");font-weight:${w};font-style:normal;font-display:swap;}`)
+    .join("");
+  const family = `"Brand Arabic",var(--font-arabic-fallback,system-ui),sans-serif`;
+  return `${faces}html[lang="ar"]{--font-arabic:${family};--font-arabic-display:${family};}`;
+}
+
 export function themeToCssVars(theme: SiteTheme): string {
   const ty = theme.typography;
   const l = theme.layout;
@@ -51,13 +66,20 @@ export function themeToCssVars(theme: SiteTheme): string {
     "--heading-weight": String(ty.headingWeight),
     "--line-height": String(ty.lineHeight),
     "--heading-tracking": `${ty.headingLetterSpacing}em`,
+    // Arabic pages (app/globals.css → "ARABIC TYPE"): line spacing and smallest label size
+    "--ar-line-height": String(ty.arabicLineHeight),
+    "--ar-small-size": `${ty.arabicSmallSize}px`,
     // Layout: page width (Tailwind's max-w-7xl reads this), products per row, image shape
     "--container-7xl": `${l.containerWidth}px`,
     "--grid-cols": String(l.gridColumns),
     "--product-ratio": l.productImageRatio === "portrait" ? "3 / 4" : "1 / 1",
+    // Scroll reveal (app/globals.css → "SCROLL REVEAL")
+    "--reveal-distance": `${l.motion.distance}px`,
+    "--reveal-duration": `${l.motion.duration}s`,
+    "--reveal-stagger": `${l.motion.stagger}s`,
   };
   // DARK MODE (dashboard → Theme & design → Dark mode): the same variables with the dark colours.
   // They apply while <html data-mode="dark"> (set by components/layout/ModeToggle.tsx)
   const dark = theme.darkMode.enabled ? `html[data-mode="dark"]{${css(colorVars(theme.darkMode.colors))}color-scheme:dark;}` : "";
-  return `:root{${css(vars)}}${dark}`;
+  return `:root{${css(vars)}}${dark}${brandArabicFont(theme)}`;
 }

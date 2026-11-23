@@ -1,0 +1,794 @@
+{
+  "brand": {
+    "name": {
+      "ar": "ماسي",
+      "en": "MASI"
+    },
+    "tagline": {
+      "ar": "مجوهرات ماسي — القاهرة منذ 1963",
+      "en": "MASI Jewelry — Cairo, since 1963"
+    },
+    "logo": "/clients/masi/logo.svg",
+    "logoOnDark": "/clients/masi/logo-light.svg",
+    "logoShape": "wide",
+    "favicon": "/clients/masi/favicon.png",
+    "shareImage": "/clients/masi/home/hero.jpg"
+  },
+  "colors": {
+    "primary": "#04231E",
+    "primaryForeground": "#FFFFFF",
+    "secondary": "#ECECE6",
+    "secondaryForeground": "#04231E",
+    "accent": "#B08D57",
+    "background": "#F5F5F2",
+    "foreground": "#04231E",
+    "card": "#FFFFFF",
+    "muted": "#ECECE6",
+    "mutedForeground": "#4D625D",
+    "border": "#DCDDD6",
+    "headerBackground": "#F5F5F2",
+    "headerForeground": "#04231E",
+    "footerBackground": "#F5F5F2",
+    "footerForeground": "#04231E",
+    "danger": "#B42318"
+  },
+  "typography": {
+    "arabicFont": "notoNaskh",
+    "arabicHeadingFont": "notoNaskh",
+    "latinFont": "helveticaNow",
+    "latinHeadingFont": "juana",
+    "baseSize": 14,
+    "headingWeight": 300,
+    "lineHeight": 1.6,
+    "headingLetterSpacing": 0,
+    "arabicCleanSpacing": true,
+    "arabicLineHeight": 1.8,
+    "arabicSmallSize": 13,
+    "arabicDigits": "latn",
+    "arabicBrandFont": {
+      "name": "",
+      "light": "",
+      "regular": "",
+      "medium": "",
+      "bold": ""
+    }
+  },
+  "layout": {
+    "containerWidth": 1280,
+    "radius": 0,
+    "stickyHeader": true,
+    "breadcrumbs": true,
+    "productCard": "minimal",
+    "productImageRatio": "portrait",
+    "gridColumns": 4,
+    "pageTitle": "editorial",
+    "priceFormat": {
+      "symbol": {
+        "ar": "ج.م",
+        "en": "LE"
+      },
+      "position": "after",
+      "decimals": false
+    },
+    "card": {
+      "align": "start",
+      "newBadge": true,
+      "hoverImage": false,
+      "soldOut": "overlay",
+      "fromPrice": true,
+      "frame": false,
+      "nameSize": "sm",
+      "priceSize": "sm",
+      "hoverButton": {
+        "show": false,
+        "label": {
+          "ar": "",
+          "en": ""
+        }
+      },
+      "priceSymbol": {
+        "ar": "ج.م",
+        "en": "LE"
+      },
+      "priceDecimals": true,
+      "imageBackground": "#F5F5F2",
+      "soldOutLook": {
+        "shade": "#F5F5F2",
+        "strength": 40,
+        "grayscale": false,
+        "labelBackground": "#FFFFFF",
+        "labelText": "#04231E",
+        "label": {
+          "ar": "",
+          "en": ""
+        },
+        "shape": "square",
+        "position": "center",
+        "size": "sm",
+        "border": false
+      },
+      "imageDots": true,
+      "badgeLook": "box",
+      "blendImage": true,
+      "priceColor": "muted",
+      "imagePadding": 10,
+      "colourAfterName": true
+    },
+    "motion": {
+      "reveal": true,
+      "mode": "elements",
+      "distance": 26,
+      "duration": 0.9,
+      "stagger": 0.08,
+      "hoverZoom": true
+    }
+  },
+  "header": {
+    "layout": "logo-start",
+    "menuAlign": "center",
+    "height": "compact",
+    "width": "full",
+    "border": true,
+    "shadow": false,
+    "logoSize": "md",
+    "showName": "hide",
+    "hoverColor": "",
+    "menu": {
+      "home": true,
+      "products": true,
+      "categories": true,
+      "pages": true,
+      "pageSlugs": [
+        "about",
+        "contact"
+      ],
+      "order": [],
+      "extra": [],
+      "categoriesDropdown": false,
+      "categoriesLabel": {
+        "ar": "",
+        "en": ""
+      },
+      "pagesDropdown": {
+        "enabled": false,
+        "label": {
+          "ar": "",
+          "en": ""
+        }
+      },
+      "categoriesDropdownIds": [],
+      "shopAll": {
+        "show": true,
+        "label": {
+          "ar": "كل المجوهرات",
+          "en": "All jewelry"
+        }
+      }
+    },
+    "builder": {
+      "enabled": true,
+      "items": [
+        {
+          "part": "text",
+          "row": "top",
+          "zone": "center",
+          "show": false
+        },
+        {
+          "part": "drawer",
+          "row": "main",
+          "zone": "start",
+          "show": true
+        },
+        {
+          "part": "menu",
+          "row": "main",
+          "zone": "start",
+          "show": false
+        },
+        {
+          "part": "logo",
+          "row": "main",
+          "zone": "center",
+          "show": true
+        },
+        {
+          "part": "language",
+          "row": "main",
+          "zone": "end",
+          "show": false
+        },
+        {
+          "part": "search",
+          "row": "main",
+          "zone": "end",
+          "show": true
+        },
+        {
+          "part": "account",
+          "row": "main",
+          "zone": "end",
+          "show": false
+        },
+        {
+          "part": "cart",
+          "row": "main",
+          "zone": "end",
+          "show": true
+        }
+      ],
+      "topHeight": "compact",
+      "bottomHeight": "normal",
+      "rowLines": false
+    },
+    "search": {
+      "look": "panel",
+      "width": "narrow",
+      "placeholder": {
+        "ar": "ابحث عن قطعة",
+        "en": "Search for a piece"
+      },
+      "floatingLabel": false,
+      "buttonText": {
+        "ar": "",
+        "en": ""
+      },
+      "buttonTextOn": "hover",
+      "fieldBackground": "#FFFFFF",
+      "fieldBorder": "#DCDDD6",
+      "labelColor": "",
+      "buttonColor": "",
+      "buttonTextColor": "",
+      "buttonHoverColor": "#04231E",
+      "buttonHoverTextColor": "#FFFFFF",
+      "closeButton": true,
+      "closeColor": "",
+      "live": true,
+      "liveCount": 4,
+      "popular": [
+        {
+          "ar": "خواتم",
+          "en": "Rings"
+        },
+        {
+          "ar": "قلادات",
+          "en": "Necklaces"
+        },
+        {
+          "ar": "أساور",
+          "en": "Bracelet"
+        },
+        {
+          "ar": "ألماس",
+          "en": "Diamond"
+        },
+        {
+          "ar": "زفاف",
+          "en": "Bridal"
+        }
+      ],
+      "loader": "monogram",
+      "loaderImage": "",
+      "iconRing": true
+    },
+    "sideMenu": {
+      "style": "editorial",
+      "width": 460,
+      "items": [
+        {
+          "label": {
+            "ar": "جديدنا",
+            "en": "New In"
+          },
+          "href": "/products?sort=newest"
+        },
+        {
+          "label": {
+            "ar": "الأكثر مبيعاً",
+            "en": "Best Sellers"
+          },
+          "href": "/products"
+        },
+        {
+          "label": {
+            "ar": "تسوق الكل",
+            "en": "Shop All"
+          },
+          "href": "/products"
+        },
+        {
+          "label": {
+            "ar": "مجوهرات ذهب",
+            "en": "Gold Jewelry"
+          },
+          "href": "/products?metal=yellow_gold"
+        },
+        {
+          "label": {
+            "ar": "مجوهرات ألماس",
+            "en": "Diamond Jewelry"
+          },
+          "href": "/products?q=diamond"
+        },
+        {
+          "label": {
+            "ar": "الزفاف",
+            "en": "Bridal"
+          },
+          "href": "/products?q=bridal"
+        },
+        {
+          "label": {
+            "ar": "المجموعات",
+            "en": "Collections"
+          },
+          "href": "/categories"
+        },
+        {
+          "label": {
+            "ar": "هدايا",
+            "en": "Gifts"
+          },
+          "href": "/products?q=gift"
+        },
+        {
+          "label": {
+            "ar": "عالم MASI",
+            "en": "MASI World"
+          },
+          "href": "/about"
+        },
+        {
+          "label": {
+            "ar": "الخدمات",
+            "en": "Services"
+          },
+          "href": "/contact"
+        }
+      ],
+      "numbered": true,
+      "itemSize": "lg",
+      "bottomLinks": [
+        {
+          "label": {
+            "ar": "قصتنا",
+            "en": "Our Story"
+          },
+          "href": "/about"
+        },
+        {
+          "label": {
+            "ar": "الفروع",
+            "en": "Stores"
+          },
+          "href": "/stores"
+        },
+        {
+          "label": {
+            "ar": "الحساب",
+            "en": "Account"
+          },
+          "href": "/account"
+        },
+        {
+          "label": {
+            "ar": "الاستوديو",
+            "en": "Studio"
+          },
+          "href": "/custom-order"
+        }
+      ],
+      "note": {
+        "ar": "EST · Cairo · 26",
+        "en": "EST · Cairo · 26"
+      },
+      "showLanguage": true,
+      "showSearch": false,
+      "showCategories": false,
+      "showAccount": false,
+      "showContact": false
+    },
+    "dropdown": {
+      "background": "",
+      "foreground": "",
+      "border": true,
+      "shadow": true,
+      "textSize": "sm",
+      "spacing": "normal"
+    },
+    "menuSize": "sm",
+    "menuWeight": "normal",
+    "menuUppercase": true,
+    "activeStyle": "none",
+    "activeColor": "",
+    "activeTextColor": "",
+    "icons": {
+      "search": true,
+      "account": true,
+      "cart": true,
+      "language": true,
+      "size": "md",
+      "set": {
+        "search": "search-thin",
+        "account": "user-solid",
+        "cart": "masi-bag",
+        "menu": "masi-menu",
+        "language": "text"
+      },
+      "display": "icons"
+    },
+    "transparent": {
+      "enabled": true,
+      "opacity": 0,
+      "blur": false,
+      "foreground": "#FFFFFF",
+      "logoOnDark": true,
+      "gradient": true
+    },
+    "announcement": {
+      "enabled": false,
+      "text": {
+        "ar": "",
+        "en": ""
+      },
+      "href": "",
+      "background": "",
+      "foreground": "",
+      "align": "center",
+      "phoneIcon": false
+    }
+  },
+  "footer": {
+    "layout": "columns",
+    "columns": [
+      "groups"
+    ],
+    "align": "center",
+    "spacing": "normal",
+    "width": "boxed",
+    "borderTop": false,
+    "showLogo": false,
+    "logoSize": "md",
+    "showName": false,
+    "showTagline": true,
+    "headingColor": "",
+    "links": {
+      "home": true,
+      "products": true,
+      "contact": true,
+      "pages": true,
+      "extra": []
+    },
+    "contact": {
+      "phone": true,
+      "whatsapp": false,
+      "email": true,
+      "address": true,
+      "hours": false
+    },
+    "contactDisplay": "details",
+    "contactDirection": "column",
+    "contactAlign": "start",
+    "contactIconStyle": "circle",
+    "contactIcons": {
+      "phone": "phone-solid",
+      "whatsapp": "whatsapp-solid",
+      "email": "mail-solid",
+      "address": "pin-solid",
+      "hours": "clock-solid"
+    },
+    "transparent": false,
+    "socialStyle": "plain",
+    "socialPlacement": "top",
+    "headingStyle": "caps",
+    "newsletter": {
+      "show": true,
+      "placeholder": {
+        "ar": "اكتب بريدك الإلكتروني",
+        "en": "Enter your email address"
+      },
+      "button": {
+        "ar": "اشترك",
+        "en": "Subscribe"
+      },
+      "thanks": {
+        "ar": "شكرًا لك — تم تسجيلك.",
+        "en": "Thank you — you're on the list."
+      }
+    },
+    "divider": "/clients/masi/home/divider.png",
+    "dividerWidth": 480,
+    "topSpace": "compact",
+    "mobileAccordion": true,
+    "groups": [
+      {
+        "title": {
+          "ar": "معلومات",
+          "en": "Information"
+        },
+        "links": [
+          {
+            "label": {
+              "ar": "تواصل معنا",
+              "en": "Contact Us"
+            },
+            "href": "/contact"
+          },
+          {
+            "label": {
+              "ar": "الأسئلة الشائعة",
+              "en": "Faq"
+            },
+            "href": "/faq"
+          },
+          {
+            "label": {
+              "ar": "الفروع",
+              "en": "Stores"
+            },
+            "href": "/stores"
+          },
+          {
+            "label": {
+              "ar": "العناية بالمجوهرات",
+              "en": "Jewelry Care"
+            },
+            "href": "/faq"
+          },
+          {
+            "label": {
+              "ar": "ضمان المنتج",
+              "en": "Product Warranty"
+            },
+            "href": "/pages/returns"
+          }
+        ],
+        "text": {
+          "ar": "",
+          "en": ""
+        }
+      },
+      {
+        "title": {
+          "ar": "تسوّق",
+          "en": "Shop Now"
+        },
+        "links": [
+          {
+            "label": {
+              "ar": "الرئيسية",
+              "en": "Home"
+            },
+            "href": "/"
+          },
+          {
+            "label": {
+              "ar": "ذهب",
+              "en": "Gold"
+            },
+            "href": "/products?metal=yellow_gold,white_gold,rose_gold"
+          },
+          {
+            "label": {
+              "ar": "ألماس",
+              "en": "Diamond"
+            },
+            "href": "/products?q=diamond"
+          },
+          {
+            "label": {
+              "ar": "خواتم",
+              "en": "Rings"
+            },
+            "href": "/categories/rings"
+          },
+          {
+            "label": {
+              "ar": "قلادات",
+              "en": "Necklace"
+            },
+            "href": "/categories/necklaces"
+          }
+        ],
+        "text": {
+          "ar": "",
+          "en": ""
+        }
+      },
+      {
+        "title": {
+          "ar": "عن ماسي",
+          "en": "About Us"
+        },
+        "links": [
+          {
+            "label": {
+              "ar": "من نحن",
+              "en": "Who We Are"
+            },
+            "href": "/about#about"
+          },
+          {
+            "label": {
+              "ar": "المؤسسون",
+              "en": "Our Founders"
+            },
+            "href": "/about#heritage"
+          },
+          {
+            "label": {
+              "ar": "التزامنا",
+              "en": "Our Commitment"
+            },
+            "href": "/about#mission"
+          },
+          {
+            "label": {
+              "ar": "نقاط البيع",
+              "en": "Stockists"
+            },
+            "href": "/stores"
+          },
+          {
+            "label": {
+              "ar": "الحرفية",
+              "en": "Craftsmanship"
+            },
+            "href": "/about#craft"
+          }
+        ],
+        "text": {
+          "ar": "",
+          "en": ""
+        }
+      }
+    ],
+    "contactUnderAbout": false,
+    "headingSize": "sm",
+    "bottom": {
+      "show": true,
+      "text": {
+        "ar": "© {year} ماسي للمجوهرات",
+        "en": "© {year} MASI JEWELRY"
+      },
+      "poweredBy": false,
+      "align": "center",
+      "background": "#0E0A08",
+      "links": [],
+      "foreground": "#D9D4CB",
+      "mark": true,
+      "endText": {
+        "ar": "تأسست · *القاهرة* · 26",
+        "en": "EST · *Cairo* · 26"
+      }
+    },
+    "backToTop": false
+  },
+  "filters": {
+    "sections": [
+      "category",
+      "offers",
+      "price",
+      "karat",
+      "metal",
+      "weight",
+      "collection",
+      "stock"
+    ],
+    "categoryIds": [],
+    "display": "drawer",
+    "side": "start",
+    "buttonLook": "both",
+    "buttonPosition": "end",
+    "showCount": true,
+    "icon": "sliders-line",
+    "viewSwitch": false
+  },
+  "productPage": {
+    "show": {
+      "newBadge": true,
+      "sku": false,
+      "priceNote": false,
+      "stock": false,
+      "quantity": true,
+      "buyNow": true,
+      "whatsapp": false,
+      "priceBreakdown": false,
+      "description": true,
+      "specifications": true,
+      "related": true
+    },
+    "imageSide": "start",
+    "relatedCount": 4,
+    "align": "start",
+    "buttons": {
+      "cart": {
+        "style": "filled",
+        "color": "#04231E",
+        "textColor": "#FFFFFF",
+        "icon": false
+      },
+      "buy": {
+        "style": "outline",
+        "color": "#04231E",
+        "textColor": "#04231E",
+        "icon": false
+      },
+      "whatsapp": {
+        "style": "outline",
+        "color": "",
+        "textColor": "",
+        "icon": true
+      }
+    },
+    "buttonOrder": [
+      "cart",
+      "buy",
+      "whatsapp"
+    ],
+    "buttonsLayout": "stack",
+    "buttonSize": "lg",
+    "buttonShape": "square",
+    "titleSize": "md",
+    "priceSize": "md",
+    "cardPriceFormat": true,
+    "optionsStyle": "boxes",
+    "factsBox": false,
+    "quantityOwnRow": false,
+    "gallery": "grid",
+    "divider": true,
+    "iconEnd": false,
+    "bag": {
+      "mode": "drawer",
+      "autoOpen": true,
+      "width": 440,
+      "blur": true,
+      "deliveryNote": true
+    },
+    "layout": "maison",
+    "sizeGuideUrl": "",
+    "wishlist": true,
+    "returnsLine": true,
+    "alsoAvailable": true,
+    "careText": {
+      "ar": "احفظي كل قطعة منفصلة في كيس ماسي الخاص بها. تجنّبي ملامستها للعطور والكلور والكريمات، ونظّفيها برفق بقطعة قماش ناعمة وجافة، وزوري أي فرع لماسي لتلميعها مجاناً مرة كل عام.",
+      "en": "Store each piece separately in its MASI pouch. Avoid contact with perfume, chlorine and lotions. Clean gently with a soft, dry cloth and visit any MASI store for a complimentary polish once a year."
+    },
+    "shippingText": {
+      "ar": "توصيل مجاني لكل أنحاء مصر خلال 2–4 أيام عمل. تصل كل قطعة في علبة ماسي مغلقة باليد. نقبل الإرجاع والاستبدال خلال 14 يوماً من الاستلام بحالتها الأصلية.",
+      "en": "Complimentary delivery across Egypt within 2–4 working days. Every piece arrives in the MASI box, sealed by hand. Returns and exchanges are accepted within 14 days of delivery, in original condition."
+    }
+  },
+  "texts": {
+    "ar": {
+      "pages.products": "مجموعة ماسي",
+      "product.addToCart": "أضف إلى الحقيبة"
+    },
+    "en": {
+      "pages.products": "MASI Collection",
+      "product.addToCart": "Add to Bag"
+    }
+  },
+  "darkMode": {
+    "enabled": false,
+    "default": "light",
+    "colors": {
+      "primary": "#7C8C8A",
+      "primaryForeground": "#ffffff",
+      "accent": "#B08D57",
+      "danger": "#F87171",
+      "background": "#121212",
+      "foreground": "#F2F2F2",
+      "card": "#1C1C1C",
+      "muted": "#242424",
+      "mutedForeground": "#A8A8A8",
+      "border": "#333333",
+      "secondary": "#1F1F1F",
+      "secondaryForeground": "#F2F2F2",
+      "headerBackground": "#0A0A0A",
+      "headerForeground": "#FFFFFF",
+      "footerBackground": "#0A0A0A",
+      "footerForeground": "#FFFFFF"
+    }
+  }
+}

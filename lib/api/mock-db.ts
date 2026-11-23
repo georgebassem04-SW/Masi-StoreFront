@@ -56,6 +56,8 @@ const DIR = process.env.MOCK_DB_DIR || (process.env.VERCEL ? "/tmp/mock-db" : pa
 const FILE = path.join(DIR, "db.json");
 /** Customers' photos for custom orders (private: only the dashboard shows them, to staff) */
 export const CUSTOM_PHOTOS_DIR = path.join(DIR, "custom-photos");
+/** Transfer screenshots (InstaPay / bank transfer) — private: the dashboard shows them to staff only */
+export const PAYMENT_PROOFS_DIR = path.join(DIR, "payment-proofs");
 
 function load(): Db {
   try {

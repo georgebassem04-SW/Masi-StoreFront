@@ -98,7 +98,22 @@
     "offerDiscount": "Offer discount",
     "soldOut": "Sold out",
     "from": "From",
-    "chooseOption": "Choose option"
+    "chooseOption": "Choose option",
+    "productDescription": "Product description:",
+    "sizeNote": "Please note that the carat weight, number of stones and product dimensions will vary based on the size of the creation you order.",
+    "selectASize": "Select a size",
+    "selectSize": "Select size",
+    "sizeGuide": "Size guide",
+    "returnsLine": "Complimentary returns and exchanges",
+    "productDetails": "Product Details",
+    "materials": "Materials",
+    "care": "Product Care",
+    "shipping": "Shipping & Return",
+    "alsoAvailable": "Also available in",
+    "wishlistAdd": "Add to wishlist",
+    "wishlistRemove": "Remove from wishlist",
+    "ref": "Ref.",
+    "youMayAlsoLike": "You may also like"
   },
   "gold": {
     "todayPrices": "Today's gold prices",
@@ -140,7 +155,11 @@
     "priceNote": "Prices follow today's gold rate and are confirmed at checkout. Shipping is calculated at checkout.",
     "orderSummary": "Order summary",
     "decrease": "Decrease quantity",
-    "increase": "Increase quantity"
+    "increase": "Increase quantity",
+    "bag": "Your bag",
+    "item": "item",
+    "close": "Close",
+    "deliveryNote": "Complimentary delivery & gift wrapping"
   },
   "common": {
     "notFound": "Page not found",
@@ -155,7 +174,25 @@
     "pickup": "Store pickup",
     "directions": "Directions",
     "call": "Call",
-    "whatsapp": "WhatsApp"
+    "whatsapp": "WhatsApp",
+    "findStore": "Find a store",
+    "locations": "{count} locations",
+    "locationsOne": "1 location",
+    "filterAll": "All",
+    "filterBoutiques": "Boutiques",
+    "filterSoon": "Coming soon",
+    "filterHeritage": "Heritage",
+    "bookVisit": "Book a visit",
+    "ourStory": "Our story",
+    "showOnMap": "Show on map",
+    "kinds": {
+      "boutique": "Boutique",
+      "flagship": "Flagship",
+      "new": "New",
+      "heritage": "Heritage",
+      "private": "Private"
+    },
+    "map": "Map"
   },
   "contact": {
     "name": "Full name",
@@ -280,7 +317,16 @@
     "loginLink": "Log in for faster checkout",
     "savedAddress": "Deliver to a saved address",
     "newAddress": "Use a new address",
-    "saveAddress": "Save this address to my account"
+    "saveAddress": "Save this address to my account",
+    "payAccount": {
+      "payTo": "Transfer to this account number",
+      "accountName": "Account name",
+      "amount": "Amount to transfer",
+      "copy": "Copy",
+      "copied": "Copied!",
+      "openApp": "Open InstaPay",
+      "proofLater": "After placing your order, you'll upload a screenshot of the transfer on the order page."
+    }
   },
   "orderSuccess": {
     "title": "Thank you! Your order is placed",
@@ -301,7 +347,28 @@
     "continue": "Continue shopping",
     "contactUs": "Questions? Contact us",
     "notFound": "We couldn't find this order, but if you just placed it, it's safe with us. Keep your order number.",
-    "quantity": "Qty"
+    "quantity": "Qty",
+    "payNow": "Pay with {method}",
+    "payWithNumber": "Write your order number {number} in the transfer note if you can. Then upload the screenshot below.",
+    "proof": {
+      "title": "Upload the transfer screenshot",
+      "hint": "After the transfer, take a screenshot of the confirmation and upload it here. Your order is confirmed once we check the payment.",
+      "choose": "Choose the screenshot (JPG, PNG or WebP, up to 5 MB)",
+      "send": "Send screenshot",
+      "sending": "Sending…",
+      "sent": "Screenshot received — we'll confirm your payment soon.",
+      "sentCount": "{n} screenshots sent",
+      "another": "Send another screenshot",
+      "waiting": "Your order is waiting for payment confirmation. You can come back to this page any time from the link in your email.",
+      "paid": "Payment confirmed — thank you!",
+      "errors": {
+        "photo": "Please choose a JPG, PNG or WebP picture up to 5 MB.",
+        "too_many": "You've already sent the maximum number of screenshots. Contact us if needed.",
+        "not_allowed": "This order doesn't need a screenshot any more.",
+        "not_found": "We couldn't find this order. Please use the link from your email.",
+        "failed": "Couldn't send. Please try again."
+      }
+    }
   },
   "emails": {
     "orderConfirmation": {
@@ -329,7 +396,10 @@
       "weight": "g",
       "size": "Size",
       "staffSubject": "New order {number} — {total}",
-      "staffIntro": "A new order was placed on the website."
+      "staffIntro": "A new order was placed on the website.",
+      "accountNumber": "Account number",
+      "accountName": "Account name",
+      "uploadProof": "Upload your transfer screenshot here"
     }
   },
   "auth": {
@@ -498,7 +568,10 @@
     "offers": "Special offers",
     "offersOnly": "Offers only",
     "viewGrid": "Grid",
-    "viewLarge": "Big cards"
+    "viewLarge": "Big cards",
+    "popular": "Popular",
+    "pieces": "{count} pieces",
+    "piecesOne": "1 piece"
   },
   "customOrder": {
     "intro": "Have a photo of a piece you love, or an idea you'd like made? Upload the photo, tell us the details, and our team will get back to you with a price and timing.",

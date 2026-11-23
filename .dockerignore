@@ -1,0 +1,10 @@
+# Never put secrets, local builds or local data inside the image
+node_modules
+.next
+.env
+.env.*
+!.env.example
+.mock-db
+*.tsbuildinfo
+.git
+*.bat

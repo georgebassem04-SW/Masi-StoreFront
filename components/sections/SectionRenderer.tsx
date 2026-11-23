@@ -83,7 +83,25 @@ export function SectionRenderer({ sections, ...rest }: { sections: HomeSection[]
           const Component = registry[section.type];
           // Unknown type from the dashboard: skip it instead of crashing the page
           if (!Component) return null;
-          return <Component key={section.id} section={section} {...rest} />;
+          // Scroll reveal (Theme & design → Layout → Motion): every block rises in, except big top pictures
+          // anchor (dashboard → the block → "Address in the page"): links like /about#craft jump here
+          const anchor = section.anchor || undefined;
+          if (section.type === "hero" || section.type === "page_hero")
+            return anchor ? (
+              // data-hero-wrap: the see-through header still sits over this picture (app/globals.css)
+              <div key={section.id} id={anchor} data-hero-wrap="" className="scroll-mt-24">
+                <Component section={section} {...rest} />
+              </div>
+            ) : (
+              <Component key={section.id} section={section} {...rest} />
+            );
+          return (
+            // data-reveal-scope: ScrollReveal.tsx animates the titles, texts, pictures and cards inside it
+            // (or the whole block, when Layout → Motion is set to "blocks")
+            <div key={section.id} id={anchor} data-reveal-scope="" className="scroll-mt-24">
+              <Component section={section} {...rest} />
+            </div>
+          );
         })}
     </>
   );

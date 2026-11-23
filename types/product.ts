@@ -72,6 +72,18 @@ export interface Product {
   isFeatured: boolean;
   isNew: boolean;
   certificate?: { issuer: string; number: string };
+
+  /* ---- Product page "Maison" look (dashboard → the product → "Product page texts"). All optional ---- */
+  /** Line under the name, in italic: the colour or finish ("Yellow gold") */
+  subtitle?: LocalizedText;
+  /** "Product description" list — one point per line ("18K yellow gold (750/1000)", "Width: 6.5 mm") */
+  highlights?: LocalizedText;
+  /** Folding section "Product Details" */
+  details?: LocalizedText;
+  /** Folding section "Materials" */
+  materials?: LocalizedText;
+  /** Same code on several products = "Also available in" (e.g. the same bracelet in yellow, pink and white gold) */
+  variantGroup?: string;
   createdAt: string;
 }
 

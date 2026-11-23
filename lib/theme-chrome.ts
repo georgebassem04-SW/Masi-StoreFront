@@ -13,7 +13,7 @@
  * parseHeader / parseFooter, add it to the dashboard's checks (lib/validation/theme.ts) and panel
  * (components/theme/HeaderPanel.tsx / FooterPanel.tsx), then use it in the storefront's Header.tsx / Footer.tsx.
  */
-import type { ChromeLink, FilterSection, FooterColumn, FooterGroup, HeaderBuilder, HeaderPart, HeaderPlacement, HeaderSearchStyle, LocalizedText, ProductCardStyle, SoldOutLook, ProductButton, ProductButtonStyle, ProductPagePart, ThemeColors, ThemeDarkMode, ThemeFilters, ThemeFooter, ThemeHeader, ThemeProductPage } from "@/types";
+import type { ChromeLink, FilterSection, FooterColumn, FooterGroup, HeaderBuilder, HeaderPart, HeaderPlacement, HeaderSearchStyle, LocalizedText, ProductCardStyle, SoldOutLook, ProductButton, ProductButtonStyle, ProductPagePart, ThemeColors, ThemeDarkMode, ThemeFilters, ThemeFooter, ThemeHeader, ThemeProductPage, ThemeBag, ThemeSideMenu, ThemeMotion, PriceFormat } from "@/types";
 import { DEFAULT_ICONS, ICON_THEMES, isIcon, type IconSlot } from "@/lib/icon-library";
 
 /** Looks of the open page's link in the top menu (dashboard → Header → Menu style) */
@@ -97,6 +97,48 @@ export function parseBuilder(input: unknown): HeaderBuilder {
   };
 }
 
+/* ----- Prices (Theme & design → Layout → Prices) ----- */
+export const DEFAULT_PRICE_FORMAT: PriceFormat = { symbol: { ar: "", en: "" }, position: "after", decimals: false };
+export function parsePriceFormat(input: unknown): PriceFormat {
+  const p = obj(input);
+  return { symbol: text(p.symbol, 8), position: p.position === "before" ? "before" : "after", decimals: p.decimals === true };
+}
+
+/* ----- Motion (Theme & design → Layout → Motion) ----- */
+export const DEFAULT_MOTION: ThemeMotion = { reveal: false, mode: "elements", distance: 26, duration: 0.9, stagger: 0.08, hoverZoom: false };
+
+export function parseMotion(input: unknown): ThemeMotion {
+  const m = obj(input);
+  const d = DEFAULT_MOTION;
+  const range = (v: unknown, min: number, max: number, fallback: number) => (typeof v === "number" && Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : fallback);
+  return {
+    reveal: typeof m.reveal === "boolean" ? m.reveal : d.reveal,
+    mode: m.mode === "blocks" ? "blocks" : "elements",
+    distance: Math.round(range(m.distance, 0, 60, d.distance)),
+    duration: range(m.duration, 0.3, 1.5, d.duration),
+    stagger: range(m.stagger, 0, 0.2, d.stagger),
+    hoverZoom: typeof m.hoverZoom === "boolean" ? m.hoverZoom : d.hoverZoom,
+  };
+}
+
+/* ----- Side menu (dashboard → Header → Side menu) ----- */
+export const MAX_SIDE_MENU_ITEMS = 12;
+export const MAX_SIDE_MENU_BOTTOM = 6;
+export const DEFAULT_SIDE_MENU: ThemeSideMenu = {
+  style: "utility",
+  width: 380,
+  items: [],
+  numbered: true,
+  itemSize: "lg",
+  bottomLinks: [],
+  note: { ar: "", en: "" },
+  showLanguage: true,
+  showSearch: true,
+  showCategories: true,
+  showAccount: true,
+  showContact: true,
+};
+
 /* ----- Search bar (dashboard → Header → Search bar) ----- */
 export const DEFAULT_SEARCH: HeaderSearchStyle = {
   look: "simple",
@@ -114,10 +156,18 @@ export const DEFAULT_SEARCH: HeaderSearchStyle = {
   buttonHoverTextColor: "",
   closeButton: true,
   closeColor: "",
+  live: true,
+  liveCount: 4,
+  popular: [],
+  loader: "spinner",
+  loaderImage: "",
+  iconRing: false,
 };
 
 /** Ready-made looks the client can pick in one click (then change any colour or text) */
-export const SEARCH_PRESETS: Record<"simple" | "boxed" | "boxedText" | "outline", Partial<HeaderSearchStyle>> = {
+export const SEARCH_PRESETS: Record<"panel" | "simple" | "boxed" | "boxedText" | "outline", Partial<HeaderSearchStyle>> = {
+  // Editorial panel (MASI): big serif field, popular words, 4 results per row as you type, turning brand mark
+  panel: { look: "panel", width: "narrow", live: true, liveCount: 4, loader: "monogram", iconRing: true, closeButton: true },
   simple: { look: "simple", width: "narrow", floatingLabel: false, buttonText: { ar: "", en: "" } },
   // Like kinggoldeg.com: framed field with the title on top, main-colour button that turns accent with "Search" on hover
   boxed: { look: "boxed", width: "full", floatingLabel: true, buttonText: { ar: "بحث", en: "Search" }, buttonTextOn: "hover", closeButton: true },
@@ -169,6 +219,7 @@ export const DEFAULT_HEADER: ThemeHeader = {
   transparent: { enabled: false, opacity: 0, blur: false, foreground: "", logoOnDark: false, gradient: false },
   announcement: { enabled: false, text: { ar: "", en: "" }, href: "", background: "", foreground: "", align: "center", phoneIcon: false },
   search: DEFAULT_SEARCH,
+  sideMenu: DEFAULT_SIDE_MENU,
 };
 
 export const DEFAULT_FOOTER: ThemeFooter = {
@@ -199,6 +250,9 @@ export const DEFAULT_FOOTER: ThemeFooter = {
   headingStyle: "classic",
   newsletter: { show: false, placeholder: { ar: "", en: "" }, button: { ar: "", en: "" }, thanks: { ar: "", en: "" } },
   divider: "",
+  dividerWidth: 760,
+  topSpace: "spacious",
+  mobileAccordion: false,
   bottom: { show: true, text: { ar: "", en: "" }, poweredBy: true, align: "center", background: "", links: [], foreground: "", mark: false, endText: { ar: "", en: "" } },
   backToTop: false,
 };
@@ -244,6 +298,8 @@ export const DEFAULT_PRODUCT_CARD: ProductCardStyle = {
   badgeLook: "pill",
   blendImage: false,
   priceColor: "primary",
+  imagePadding: 0,
+  colourAfterName: false,
 };
 
 /* ---------- small checkers ---------- */
@@ -345,6 +401,7 @@ export function parseHeader(input: unknown): ThemeHeader {
       foreground: color(tr.foreground, ""),
     },
     search: parseSearch(h.search),
+    sideMenu: parseSideMenu(h.sideMenu),
     announcement: {
       enabled: bool(a.enabled, d.announcement.enabled),
       text: text(a.text, 200),
@@ -357,12 +414,34 @@ export function parseHeader(input: unknown): ThemeHeader {
   };
 }
 
+/** Checks the side menu options (missing or wrong values → defaults) */
+export function parseSideMenu(input: unknown): ThemeSideMenu {
+  const m = obj(input);
+  const d = DEFAULT_SIDE_MENU;
+  const list = (v: unknown, max: number): ChromeLink[] =>
+    (Array.isArray(v) ? v : []).slice(0, max).map((l) => ({ label: text(obj(l).label, 60), href: safeHref(obj(l).href) }));
+  return {
+    style: oneOf(m.style, ["utility", "editorial"] as const, d.style),
+    width: m.width === 320 || m.width === 460 || m.width === 520 ? m.width : 380,
+    items: list(m.items, MAX_SIDE_MENU_ITEMS),
+    numbered: bool(m.numbered, d.numbered),
+    itemSize: oneOf(m.itemSize, ["md", "lg", "xl"] as const, d.itemSize),
+    bottomLinks: list(m.bottomLinks, MAX_SIDE_MENU_BOTTOM),
+    note: text(m.note, 60),
+    showLanguage: bool(m.showLanguage, d.showLanguage),
+    showSearch: bool(m.showSearch, d.showSearch),
+    showCategories: bool(m.showCategories, d.showCategories),
+    showAccount: bool(m.showAccount, d.showAccount),
+    showContact: bool(m.showContact, d.showContact),
+  };
+}
+
 /** Checks the search bar look (missing or wrong values → defaults) */
 export function parseSearch(input: unknown): HeaderSearchStyle {
   const s = obj(input);
   const d = DEFAULT_SEARCH;
   return {
-    look: oneOf(s.look, ["simple", "boxed"] as const, d.look),
+    look: oneOf(s.look, ["simple", "boxed", "panel"] as const, d.look),
     width: oneOf(s.width, ["narrow", "full"] as const, d.width),
     placeholder: text(s.placeholder, 60),
     floatingLabel: bool(s.floatingLabel, d.floatingLabel),
@@ -377,6 +456,14 @@ export function parseSearch(input: unknown): HeaderSearchStyle {
     buttonHoverTextColor: color(s.buttonHoverTextColor, ""),
     closeButton: bool(s.closeButton, d.closeButton),
     closeColor: color(s.closeColor, ""),
+    live: bool(s.live, d.live),
+    liveCount: s.liveCount === 8 ? 8 : 4,
+    // Up to 8 words, empty ones dropped
+    popular: (Array.isArray(s.popular) ? s.popular : []).map((w) => text(w, 30)).filter((w) => w.ar.trim() || w.en.trim()).slice(0, 8),
+    loader: oneOf(s.loader, ["monogram", "spinner"] as const, d.loader),
+    // Only a site path ("/uploads/…") or an https address
+    loaderImage: typeof s.loaderImage === "string" && s.loaderImage.length <= 500 && /^(\/(?!\/)|https:\/\/)/.test(s.loaderImage) ? s.loaderImage : "",
+    iconRing: bool(s.iconRing, d.iconRing),
   };
 }
 
@@ -437,6 +524,9 @@ export function parseFooter(input: unknown): ThemeFooter {
       thanks: text(obj(f.newsletter).thanks, 120),
     },
     divider: typeof f.divider === "string" && (f.divider === "" || /^(\/(?!\/)|https?:\/\/)/.test(f.divider)) ? f.divider.slice(0, 500) : "",
+    dividerWidth: typeof f.dividerWidth === "number" && f.dividerWidth >= 240 && f.dividerWidth <= 1000 ? Math.round(f.dividerWidth) : d.dividerWidth,
+    topSpace: oneOf(f.topSpace, ["compact", "normal", "spacious"] as const, d.topSpace),
+    mobileAccordion: bool(f.mobileAccordion, d.mobileAccordion),
     groups: (Array.isArray(f.groups) ? f.groups : []).slice(0, MAX_FOOTER_GROUPS).map(
       (g): FooterGroup => ({ title: text(obj(g).title, 60), links: links(obj(g).links).slice(0, MAX_GROUP_LINKS), text: text(obj(g).text, 300) }),
     ),
@@ -502,6 +592,20 @@ export const PRODUCT_BUTTONS: ProductButton[] = ["cart", "buy", "whatsapp"];
 
 const button = (style: ProductButtonStyle["style"]): ProductButtonStyle => ({ style, color: "", textColor: "", icon: true });
 
+/** The bag (dashboard → Product page → Bag): drawer that opens by itself after "Add to bag" */
+export const DEFAULT_BAG: ThemeBag = { mode: "drawer", autoOpen: true, width: 440, blur: true, deliveryNote: true };
+
+export function parseBag(input: unknown): ThemeBag {
+  const b = obj(input);
+  return {
+    mode: b.mode === "page" ? "page" : "drawer",
+    autoOpen: b.autoOpen !== false,
+    width: b.width === 380 || b.width === 520 ? b.width : 440,
+    blur: b.blur !== false,
+    deliveryNote: b.deliveryNote !== false,
+  };
+}
+
 export const DEFAULT_PRODUCT_PAGE: ThemeProductPage = {
   show: Object.fromEntries(PRODUCT_PAGE_PARTS.map((p) => [p, true])) as Record<ProductPagePart, boolean>,
   imageSide: "start",
@@ -521,6 +625,14 @@ export const DEFAULT_PRODUCT_PAGE: ThemeProductPage = {
   gallery: "thumbs",
   divider: true,
   iconEnd: false,
+  bag: { ...DEFAULT_BAG },
+  layout: "classic",
+  sizeGuideUrl: "",
+  wishlist: true,
+  returnsLine: true,
+  alsoAvailable: true,
+  careText: { ar: "", en: "" },
+  shippingText: { ar: "", en: "" },
 };
 
 const hexColor = (v: unknown): string => (typeof v === "string" && /^#[0-9a-fA-F]{6}$/.test(v) ? v : "");
@@ -557,9 +669,17 @@ export function parseProductPage(input: unknown): ThemeProductPage {
     optionsStyle: pick(p.optionsStyle, ["pills", "boxes"] as const, "pills"),
     factsBox: p.factsBox === true,
     quantityOwnRow: p.quantityOwnRow === true,
-    gallery: pick(p.gallery, ["thumbs", "stack"] as const, "thumbs"),
+    gallery: pick(p.gallery, ["thumbs", "stack", "grid"] as const, "thumbs"),
     divider: p.divider !== false,
     iconEnd: p.iconEnd === true,
+    bag: parseBag(p.bag),
+    layout: p.layout === "maison" ? "maison" : "classic",
+    sizeGuideUrl: safeHref(p.sizeGuideUrl),
+    wishlist: p.wishlist !== false,
+    returnsLine: p.returnsLine !== false,
+    alsoAvailable: p.alsoAvailable !== false,
+    careText: text(p.careText, 1000),
+    shippingText: text(p.shippingText, 1000),
   };
 }
 
@@ -672,6 +792,8 @@ export function parseProductCard(input: unknown): ProductCardStyle {
     badgeLook: oneOf(c.badgeLook, ["pill", "box"] as const, d.badgeLook),
     blendImage: bool(c.blendImage, d.blendImage),
     priceColor: oneOf(c.priceColor, ["primary", "muted"] as const, d.priceColor),
+    imagePadding: typeof c.imagePadding === "number" && c.imagePadding >= 0 && c.imagePadding <= 20 ? Math.round(c.imagePadding) : d.imagePadding,
+    colourAfterName: bool(c.colourAfterName, d.colourAfterName),
   };
 }
 

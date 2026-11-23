@@ -8,6 +8,7 @@
  *     (defaults = the original design: lib/hero-style.ts → HERO_DEFAULTS.page)
  *   - Heights in pixels -> HEIGHT below
  *   - Without a picture the banner uses the chosen background colour, else the site's soft colour
+ *   - Look "Magazine cover" (Our Story): giant word, top line, chapters in the corners → PageHeroCover.tsx
  */
 import { Accent, plainAccent } from "@/components/common/Accent";
 import Image from "next/image";
@@ -19,12 +20,15 @@ import { blurCss, heroButtonCss, overlayCss, parseHeroStyle } from "@/lib/hero-s
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { SectionProps } from "./types";
+import { PageHeroCover } from "./PageHeroCover";
 import { buttonsApart, newTab, HERO_ROW_CLASS, HERO_X_CLASS, HERO_Y_CLASS, TITLE_SIZE } from "./hero-layout";
 
 const HEIGHT = { sm: "min-h-[200px] md:min-h-[240px]", md: "min-h-[320px] md:min-h-[380px]", lg: "min-h-[440px] md:min-h-[560px]" } as const;
 
 export function PageHeroSection({ section, locale, dict }: SectionProps<PageHeroSectionType>) {
   const d = section.data;
+  // "Magazine cover" look (Our Story): its own layout — PageHeroCover.tsx
+  if (d.look === "cover") return <PageHeroCover section={section} locale={locale} />;
   const hasImage = Boolean(d.image?.url);
   const st = parseHeroStyle(d.style, "page");
   const apart = buttonsApart(st);

@@ -14,6 +14,7 @@ import type {
   HomePage,
   MenuPage,
   Order,
+  OrderAccess,
   PlacedOrder,
   PlaceOrderRequest,
   Paginated,
@@ -31,6 +32,8 @@ import type {
 } from "@/types";
 import type { ContactMessage } from "@/lib/validation/contact";
 import type { CustomRequestInput, CustomRequestPhoto } from "@/lib/validation/custom-request";
+
+export type PaymentProofResult = { ok: true; count: number } | { ok: false; error: "not_found" | "not_allowed" | "too_many" | "photo" };
 
 /**
  * The contract between the storefront and the data source.
@@ -87,8 +90,13 @@ export interface StorefrontApi {
   quoteOrder(request: QuoteRequest): Promise<Quote>;
   /** Creates the order in the dashboard (which sends it on to the ERP) */
   placeOrder(request: PlaceOrderRequest): Promise<PlacedOrder>;
-  /** One order by its number (order success page). null = not found */
-  getOrder(number: string): Promise<Order | null>;
+  /** One order by its number (order success page, emails). null = not found or not allowed — see OrderAccess */
+  getOrder(number: string, access?: OrderAccess): Promise<Order | null>;
+  /**
+   * InstaPay / bank transfer screenshot for one order (order page, needs the order page key).
+   * The order waits as "awaiting transfer" until staff confirm the payment in the dashboard.
+   */
+  uploadPaymentProof(number: string, key: string, photo: CustomRequestPhoto): Promise<PaymentProofResult>;
 
   // ===== CUSTOMER ACCOUNTS =====
   // `auth` = the logged-in customer (from the session cookie). The dashboard checks auth.token.

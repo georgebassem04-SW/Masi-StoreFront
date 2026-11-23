@@ -32,6 +32,12 @@ interface Input {
 /** Stops customer-typed text (name, address) from breaking the HTML */
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
+/** Link to the order page. The key (from the backend) is what lets the customer open it. */
+function orderPageUrl(siteUrl: string, locale: Locale, order: Order) {
+  const key = order.accessKey ? `&key=${encodeURIComponent(order.accessKey)}` : "";
+  return `${siteUrl}/${locale}/order-success?order=${encodeURIComponent(order.number)}${key}`;
+}
+
 export function orderConfirmationEmail({ order, locale, dict, payment, branch, siteUrl, site, contact = clientConfig.contact }: Input) {
   const L = dict.emails.orderConfirmation;
   const rtl = locale === "ar";
@@ -42,7 +48,7 @@ export function orderConfirmationEmail({ order, locale, dict, payment, branch, s
   const store = t(site?.brand.name ?? clientConfig.name, locale);
   const price = (n: number) => formatPrice(n, order.currency, locale);
   const isPickup = order.deliveryMethod === "store_pickup";
-  const orderUrl = `${siteUrl}/${locale}/order-success?order=${encodeURIComponent(order.number)}`;
+  const orderUrl = orderPageUrl(siteUrl, locale, order);
 
   const subject = fill(L.subject, { number: order.number, store });
 
@@ -88,11 +94,18 @@ export function orderConfirmationEmail({ order, locale, dict, payment, branch, s
       ? [a.street, a.building, a.area, a.city].filter(Boolean).map((x) => esc(x!)).join("<br>")
       : "—";
 
-  const bankBox = payment?.instructions
+  // Bank transfer / InstaPay: instructions + the account number + (when asked) "upload the screenshot on your order page"
+  const transferLines = [
+    payment?.instructions ? esc(t(payment.instructions, locale)) : "",
+    payment?.accountNumber ? `${L.accountNumber}: <strong dir="ltr" style="font-family:monospace;font-size:15px;">${esc(payment.accountNumber)}</strong>` : "",
+    payment?.accountName ? `${L.accountName}: ${esc(payment.accountName)}` : "",
+    payment?.askProof && order.paymentStatus !== "paid" ? `<a href="${orderUrl}" style="color:${c.primary};font-weight:600;">${L.uploadProof}</a>` : "",
+  ].filter(Boolean);
+  const bankBox = transferLines.length
     ? `<tr><td style="padding:0 32px 24px;">
          <div style="border:1px solid ${c.primary};background:${c.secondary};border-radius:8px;padding:16px;text-align:${start};">
            <div style="font-weight:700;margin-bottom:6px;color:${c.foreground};">${L.bankTitle}</div>
-           <div style="font-size:14px;line-height:1.6;color:${c.foreground};">${esc(t(payment.instructions, locale))}</div>
+           <div style="font-size:14px;line-height:1.8;color:${c.foreground};">${transferLines.join("<br>")}</div>
          </div></td></tr>`
     : "";
 
@@ -193,6 +206,8 @@ export function orderConfirmationEmail({ order, locale, dict, payment, branch, s
     `${L.total}: ${price(order.total)}`,
     "",
     payment?.instructions ? `${L.bankTitle}: ${t(payment.instructions, locale)}` : "",
+    payment?.accountNumber ? `${L.accountNumber}: ${payment.accountNumber}${payment.accountName ? ` (${payment.accountName})` : ""}` : "",
+    payment?.askProof && order.paymentStatus !== "paid" ? `${L.uploadProof}: ${orderUrl}` : "",
     `${L.viewOrder}: ${orderUrl}`,
     "",
     fill(L.questions, { phone: contact.phone }),
@@ -222,7 +237,7 @@ export function staffNewOrderEmail({ order, locale, dict, payment, branch, siteU
     "",
     `${L.total}: ${price(order.total)}`,
     order.notes ? `\n${order.notes}` : "",
-    `${siteUrl}/${locale}/order-success?order=${encodeURIComponent(order.number)}`,
+    orderPageUrl(siteUrl, locale, order),
   ];
   const text = lines.join("\n");
   const html = `<pre style="font-family:Tahoma,Arial,sans-serif;font-size:14px;line-height:1.6;white-space:pre-wrap;" dir="${locale === "ar" ? "rtl" : "ltr"}">${esc(text)}</pre>`;

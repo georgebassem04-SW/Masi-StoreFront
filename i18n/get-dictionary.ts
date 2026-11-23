@@ -10,6 +10,7 @@
 import "server-only";
 import type { Locale } from "@/types";
 import { getSiteTheme } from "@/lib/site-theme";
+import { arDigits } from "@/lib/format";
 
 const dictionaries = {
   ar: () => import("./dictionaries/ar.json").then((m) => m.default),
@@ -36,7 +37,16 @@ function applyOverrides<T>(dict: T, overrides: Record<string, string>): T {
   return copy as T;
 }
 
+/** Arabic: every text in the digit style chosen in the dashboard (lib/format.ts → arDigits) */
+function sameDigits<T>(node: T): T {
+  if (typeof node === "string") return arDigits(node) as T;
+  if (Array.isArray(node)) return node.map(sameDigits) as T;
+  if (node && typeof node === "object") return Object.fromEntries(Object.entries(node).map(([k, v]) => [k, sameDigits(v)])) as T;
+  return node;
+}
+
 export const getDictionary = async (locale: Locale): Promise<Dictionary> => {
   const [dict, theme] = await Promise.all([dictionaries[locale](), getSiteTheme()]);
-  return applyOverrides(dict as Dictionary, theme.texts[locale] ?? {});
+  const done = applyOverrides(dict as Dictionary, theme.texts[locale] ?? {});
+  return locale === "ar" ? sameDigits(done) : done;
 };

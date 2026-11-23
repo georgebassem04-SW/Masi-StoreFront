@@ -19,26 +19,31 @@ interface Props {
   /** Anything drawn on the picture (labels, sold-out shade) */
   children?: ReactNode;
   boxClass: string;
+  /** Space around the photos inside the tile, % (Product cards → "Space around the piece") */
+  inset?: number;
   boxStyle?: React.CSSProperties;
   dotsLabel: string;
 }
 
-export function CardImages({ images, alt, imageClass, children, boxClass, boxStyle, dotsLabel }: Props) {
+export function CardImages({ images, alt, imageClass, inset = 0, children, boxClass, boxStyle, dotsLabel }: Props) {
   const [active, setActive] = useState(0);
   const list = images.slice(0, 8);
   return (
     <>
-      <div className={boxClass} style={boxStyle}>
-        {list.map((img, i) => (
-          <Image
-            key={img.url + i}
-            src={img.url}
-            alt={i === 0 ? alt : ""}
-            fill
-            sizes="(max-width: 768px) 50vw, 25vw" quality={90}
-            className={cn("object-cover transition-opacity duration-500", imageClass, i === active ? "opacity-100" : "opacity-0")}
-          />
-        ))}
+      {/* data-card-image: zooms in on mouse-over (Theme & design → Layout → Motion → picture zoom) */}
+      <div className={boxClass} style={boxStyle} data-card-image="">
+        <div className="absolute" style={{ inset: `${inset}%` }}>
+          {list.map((img, i) => (
+            <Image
+              key={img.url + i}
+              src={img.url}
+              alt={i === 0 ? alt : ""}
+              fill
+              sizes="(max-width: 768px) 50vw, 25vw" quality={90}
+              className={cn("object-cover transition-opacity duration-500", imageClass, i === active ? "opacity-100" : "opacity-0")}
+            />
+          ))}
+        </div>
         {children}
       </div>
       {/* One dot per picture (hidden when there is only one) */}

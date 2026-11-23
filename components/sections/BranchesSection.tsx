@@ -3,6 +3,7 @@
  *
  * Where to edit:
  *   - Title / subtitle          -> page JSON (block "branches")
+ *   - Look: cards, or "Store finder" (list + filters + map + stories, MASI) -> the block → Look (StoreLocator.tsx)
  *   - Show only some branches   -> add "branchIds": ["br-1", ...] to the block
  *   - Cards at the start / center / end of the row -> dashboard → Site pages → the Branches block → "Position"
  *   - Branch details, photo, WhatsApp -> dashboard → Settings → Branches (without the dashboard: mock-data/branches.json)
@@ -18,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SectionTitle } from "@/components/common/SectionTitle";
 import type { SectionProps } from "./types";
+import { StoreLocator } from "./StoreLocator";
 
 /** Card position in the row: start = right in Arabic / left in English */
 const ALIGN = { start: "justify-start", center: "justify-center", end: "justify-end" } as const;
@@ -27,6 +29,11 @@ export async function BranchesSection({ section, locale, dict }: SectionProps<Br
   const ids = section.data.branchIds;
   const branches = ids?.length ? all.filter((b) => ids.includes(b.id)) : all;
   if (!branches.length) return null;
+
+  // "Store finder" look (dashboard → the Branches block → Look): list + filters + map + a story per store
+  if (section.data.look === "locator") {
+    return <StoreLocator branches={branches} locale={locale} labels={dict.branches} eyebrow={t(section.data.eyebrow, locale)} />;
+  }
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-16">
@@ -61,13 +68,16 @@ export async function BranchesSection({ section, locale, dict }: SectionProps<Br
                 <Clock className="mt-0.5 size-4 shrink-0 text-primary" />
                 <span>{t(b.hours, locale)}</span>
               </li>
-              <li className="flex gap-3">
-                <Phone className="mt-0.5 size-4 shrink-0 text-primary" />
-                {/* dir="ltr" keeps the number readable in Arabic */}
-                <a href={`tel:${b.phone.replace(/\s/g, "")}`} dir="ltr" className="hover:text-primary">
-                  {b.phone}
-                </a>
-              </li>
+              {/* Phone only when filled in (dashboard → Settings → Branches) */}
+              {b.phone && (
+                <li className="flex gap-3">
+                  <Phone className="mt-0.5 size-4 shrink-0 text-primary" />
+                  {/* dir="ltr" keeps the number readable in Arabic */}
+                  <a href={`tel:${b.phone.replace(/\s/g, "")}`} dir="ltr" className="hover:text-primary">
+                    {b.phone}
+                  </a>
+                </li>
+              )}
             </ul>
 
             <div className="mt-auto flex flex-wrap gap-2">
@@ -78,11 +88,13 @@ export async function BranchesSection({ section, locale, dict }: SectionProps<Br
                   </a>
                 </Button>
               )}
-              <Button asChild size="sm" variant="outline">
-                <a href={`tel:${b.phone.replace(/\s/g, "")}`}>
-                  <Phone /> {dict.branches.call}
-                </a>
-              </Button>
+              {b.phone && (
+                <Button asChild size="sm" variant="outline">
+                  <a href={`tel:${b.phone.replace(/\s/g, "")}`}>
+                    <Phone /> {dict.branches.call}
+                  </a>
+                </Button>
+              )}
               {b.whatsapp && (
                 <Button asChild size="sm" variant="outline">
                   <a href={`https://wa.me/${b.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">

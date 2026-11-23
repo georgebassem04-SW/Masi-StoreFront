@@ -27,8 +27,9 @@ export const getStoreContact = cache(async (): Promise<StoreSettings> => {
   const c = s.contact;
   return {
     contact: {
-      email: clean(c.email) ?? clientConfig.contact.email,
-      phone: clean(c.phone) ?? clientConfig.contact.phone,
+      // Empty in the dashboard = hidden on the website (never fall back to sample numbers)
+      email: clean(c.email) ?? "",
+      phone: clean(c.phone) ?? "",
       whatsapp: clean(c.whatsapp),
       address: text(c.address),
       hours: text(c.hours),

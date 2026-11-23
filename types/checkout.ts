@@ -34,6 +34,17 @@ export interface PaymentMethodOption {
   /** Which delivery methods allow this payment option */
   availableFor: DeliveryMethod[];
   isActive: boolean;
+  /**
+   * INSTAPAY / BANK TRANSFER (kind "bank_transfer", dashboard → Shipping & payment):
+   *   accountNumber  shown with a "Copy" button at checkout and on the order page
+   *   accountName    the name on the account (optional)
+   *   appUrl         "Open InstaPay" button (optional, e.g. https://ipn.eg/…)
+   *   askProof       after the order the customer uploads a screenshot of the transfer; staff confirm it
+   */
+  accountNumber?: string;
+  accountName?: string;
+  appUrl?: string;
+  askProof?: boolean;
 }
 
 export interface CheckoutOptions {
@@ -158,6 +169,6 @@ export interface PlaceOrderRequest extends QuoteRequest {
 }
 
 export type PlacedOrder =
-  | { ok: true; orderNumber: string; total: number; paymentRedirectUrl?: string }
+  | { ok: true; orderNumber: string; /** secret for the order page link */ orderKey?: string; total: number; paymentRedirectUrl?: string }
   | { ok: false; error: "price_changed"; quote: Quote }
   | { ok: false; error: "unavailable" | "blocked" | "invalid_payment"; quote?: Quote };

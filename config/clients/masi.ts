@@ -66,11 +66,12 @@ export const masiClient: ClientConfig = {
     gridColumns: 4,
   },
 
-  // ===== CONTACT DETAILS ===== TODO: placeholders — Marco will send the real ones (also editable in the dashboard)
+  // ===== CONTACT DETAILS ===== Empty = hidden on the website until the real ones are entered
+  // in the dashboard → Settings → Store details (those values replace these)
   contact: {
-    email: "info@masi.example",
-    phone: "+20 100 000 0000",
-    whatsapp: "+201000000000",
+    email: "",
+    phone: "",
+    whatsapp: "",
     address: { ar: "القاهرة، مصر", en: "Cairo, Egypt" },
     hours: { ar: "السبت – الخميس: ١١ ص – ١٠ م", en: "Sat – Thu: 11am – 10pm" },
   },

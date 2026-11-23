@@ -33,7 +33,8 @@ export default async function ProductsPage({ params, searchParams }: PageProps<"
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-10">
         {/* With a hero / title banner on top, the plain title is not repeated */}
         {!top.hasHero && (
-          <h1 className="mb-6 text-2xl font-bold md:text-3xl">
+          // "page-title": editorial look from Theme & design → Layout → Page titles
+          <h1 className="page-title mb-6 text-2xl font-bold md:text-3xl">
             {query.q ? fill(dict.catalog.searchResults, { q: query.q }) : dict.pages.products}
           </h1>
         )}

@@ -27,6 +27,11 @@ interface CartState {
   remove: (variantId: string) => void;
   setQuantity: (variantId: string, quantity: number) => void;
   clear: () => void;
+  /** Bag drawer (components/cart/CartDrawer.tsx): open/closed. Not saved in the browser. */
+  isOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
+  setOpen: (open: boolean) => void;
   /** Updates prices/quantities from the checkout quote and removes lines that can't be bought */
   syncWithQuote: (lines: { variantId: string; unitPrice: number; quantity: number; available: number }[], removeIds: string[]) => void;
 }
@@ -39,6 +44,10 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      isOpen: false,
+      openCart: () => set({ isOpen: true }),
+      closeCart: () => set({ isOpen: false }),
+      setOpen: (open) => set({ isOpen: open }),
 
       add: (item) => {
         const existing = get().items.find((i) => i.variantId === item.variantId);
@@ -78,7 +87,8 @@ export const useCartStore = create<CartState>()(
     }),
     // One cart per client (e.g. "cart-king-gold"), so two shops tested on the same localhost:3000
     // never share a cart (an old shop's items had photos from 127.0.0.1:8000 and broke the cart page)
-    { name: `cart-${process.env.NEXT_PUBLIC_CLIENT_ID ?? "demo"}` },
+    // Only the items are saved; the drawer always starts closed
+    { name: `cart-${process.env.NEXT_PUBLIC_CLIENT_ID ?? "demo"}`, partialize: (s) => ({ items: s.items }) },
   ),
 );
 

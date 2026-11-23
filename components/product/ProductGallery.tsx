@@ -16,11 +16,35 @@ import { cn } from "@/lib/utils";
 
 /**
  * `look` (dashboard → Product page → Photos): "thumbs" = big photo + small photos under it · "stack" = every photo,
- * one under the other. `background` = colour behind the photos (Layout → Product cards → Behind the pictures).
+ * one under the other · "grid" = main photo large, the others two per row (MASI design). `background` = colour behind the photos (Layout → Product cards → Behind the pictures).
  */
-export function ProductGallery({ images, alt, badges, look = "thumbs", background }: { images: MediaImage[]; alt: string; badges?: React.ReactNode; look?: "thumbs" | "stack"; background?: string }) {
+export function ProductGallery({ images, alt, badges, look = "thumbs", background }: { images: MediaImage[]; alt: string; badges?: React.ReactNode; look?: "thumbs" | "stack" | "grid"; background?: string }) {
   const [active, setActive] = useState(0);
   const current = images[active];
+
+  // GRID (like the MASI design): the main photo large, the other photos (worn, details) two per row under it.
+  // Photos sit on the page tone; white product shots blend into it (mix-blend-multiply), no white box.
+  if (look === "grid") {
+    const tile = "relative overflow-hidden bg-muted";
+    return (
+      <div className="grid grid-cols-2 gap-2">
+        {images.map((img, i) => (
+          <div key={img.url + i} className={cn(tile, i === 0 ? "col-span-2 aspect-[4/3.6]" : "aspect-[4/5]")} style={background ? { background } : undefined}>
+            <Image
+              src={img.url}
+              alt={i === 0 ? alt : ""}
+              fill
+              priority={i === 0}
+              sizes={i === 0 ? "(max-width: 1024px) 100vw, 50vw" : "(max-width: 1024px) 50vw, 25vw"}
+              quality={90}
+              className="object-contain mix-blend-multiply"
+            />
+            {i === 0 && badges && <div className="absolute start-3 top-3 flex gap-2">{badges}</div>}
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   // STACK: all photos one under the other (no zoom, no small photos)
   if (look === "stack") {

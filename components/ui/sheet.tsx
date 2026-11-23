@@ -19,11 +19,13 @@ function SheetContent({
   children,
   side = "start",
   closeLabel = "Close",
+  closeClassName,
+  overlayClassName,
   ...props
-}: React.ComponentProps<typeof SheetPrimitive.Content> & { side?: "start" | "end" | "bottom"; closeLabel?: string }) {
+}: React.ComponentProps<typeof SheetPrimitive.Content> & { side?: "start" | "end" | "bottom"; closeLabel?: string; closeClassName?: string; overlayClassName?: string }) {
   return (
     <SheetPrimitive.Portal>
-      <SheetPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0" />
+      <SheetPrimitive.Overlay className={cn("fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0", overlayClassName)} />
       <SheetPrimitive.Content
         // Don't jump into the first text box when opening (it would pop up the phone keyboard)
         onOpenAutoFocus={(e) => e.preventDefault()}
@@ -37,8 +39,8 @@ function SheetContent({
         {...props}
       >
         {children}
-        <SheetPrimitive.Close className="absolute end-4 top-4 rounded-md p-1 opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-          <X className="size-5" />
+        <SheetPrimitive.Close className={cn("absolute end-4 top-4 rounded-md p-1 opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring", closeClassName)}>
+          <X className="size-5" strokeWidth={closeClassName ? 1.25 : 2} />
           <span className="sr-only">{closeLabel}</span>
         </SheetPrimitive.Close>
       </SheetPrimitive.Content>

@@ -97,7 +97,18 @@ export interface Order {
   /** Language the customer ordered in (emails are sent in this language) */
   locale?: "ar" | "en";
   statusHistory: { status: OrderStatus; at: string }[];
+  /** Secret part of this order's page link (…/order-success?order=…&key=…). Sent by the backend. */
+  accessKey?: string;
+  /** Transfer screenshots the customer uploaded (InstaPay / bank transfer) — only when each was sent */
+  paymentProofs?: { at: string }[];
 }
+
+/**
+ * Who may open one order (getOrder):
+ *   { key }         the key from the order page link — what a customer has
+ *   { server: true } this website's server (emails) — sends BACKEND_SECRET, never use it for a page
+ */
+export type OrderAccess = { key: string } | { server: true };
 
 export interface Customer {
   id: string;

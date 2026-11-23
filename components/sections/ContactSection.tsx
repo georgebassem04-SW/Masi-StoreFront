@@ -47,11 +47,14 @@ export async function ContactSection({ section, locale, dict }: SectionProps<Con
           <aside className="h-fit space-y-6 rounded-xl bg-secondary p-6 md:p-8">
             <h3 className="text-xl font-semibold">{labels.info.title}</h3>
             <ul className="space-y-5">
-              <InfoRow icon={<Phone />} label={labels.info.call}>
-                <a href={`tel:+${digitsOnly(contact.phone)}`} dir="ltr" className="hover:text-primary">
-                  {contact.phone}
-                </a>
-              </InfoRow>
+              {/* Each line shows only when it is filled in (dashboard → Settings → Store details) */}
+              {contact.phone && (
+                <InfoRow icon={<Phone />} label={labels.info.call}>
+                  <a href={`tel:+${digitsOnly(contact.phone)}`} dir="ltr" className="hover:text-primary">
+                    {contact.phone}
+                  </a>
+                </InfoRow>
+              )}
               {contact.whatsapp && (
                 <InfoRow icon={<MessageCircle />} label={labels.info.whatsapp}>
                   <a href={`https://wa.me/${digitsOnly(contact.whatsapp)}`} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
@@ -59,11 +62,13 @@ export async function ContactSection({ section, locale, dict }: SectionProps<Con
                   </a>
                 </InfoRow>
               )}
-              <InfoRow icon={<Mail />} label={labels.info.email}>
-                <a href={`mailto:${contact.email}`} className="break-all hover:text-primary">
-                  {contact.email}
-                </a>
-              </InfoRow>
+              {contact.email && (
+                <InfoRow icon={<Mail />} label={labels.info.email}>
+                  <a href={`mailto:${contact.email}`} className="break-all hover:text-primary">
+                    {contact.email}
+                  </a>
+                </InfoRow>
+              )}
               {contact.address && (
                 <InfoRow icon={<MapPin />} label={labels.info.address}>
                   {t(contact.address, locale)}

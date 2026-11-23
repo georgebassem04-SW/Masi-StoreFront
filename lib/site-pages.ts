@@ -12,7 +12,7 @@ import type { MenuPage } from "@/types";
 import { api } from "@/lib/api";
 
 /** Pages that have their own address (app/[locale]/<slug>/page.tsx) */
-export const OWN_ROUTE_PAGES = ["about", "contact", "faq", "terms"];
+export const OWN_ROUTE_PAGES = ["about", "contact", "faq", "terms", "stores"];
 
 /**
  * SHOP PAGE TOPS — two special pages of the dashboard (Site pages) that are not pages by themselves:

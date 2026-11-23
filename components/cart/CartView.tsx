@@ -136,7 +136,7 @@ export function CartView({ locale, labels, productLabels, currency, showWeight }
         <h2 className="text-lg font-semibold">{labels.orderSummary}</h2>
         <div className="flex justify-between">
           <span>
-            {labels.subtotal} ({count} {labels.items})
+            {labels.subtotal} ({count} {count === 1 ? labels.item : labels.items})
           </span>
           <strong>{price(subtotal)}</strong>
         </div>

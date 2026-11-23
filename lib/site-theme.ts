@@ -18,7 +18,10 @@ import type { ArabicFont, LatinFont, SiteTheme } from "@/types";
 import { ARABIC_FONTS, LATIN_FONTS } from "@/types";
 import { clientConfig } from "@/config/clients";
 import { api } from "@/lib/api";
-import { DEFAULT_FILTERS, DEFAULT_FOOTER, DEFAULT_HEADER, DEFAULT_PRODUCT_CARD, DEFAULT_PRODUCT_PAGE, parseFilters, parseProductCard, parseDarkMode, parseFooter, parseHeader, parseProductPage, suggestedDarkColors } from "@/lib/theme-chrome";
+// The client's finished look saved from the dashboard — the starting point of a new deployment (config/clients/<id>-theme.json)
+import masiSavedTheme from "@/config/clients/masi-theme.json";
+import { setArabicDigits, setPriceFormat } from "@/lib/format";
+import { DEFAULT_FILTERS, DEFAULT_FOOTER, DEFAULT_HEADER, DEFAULT_MOTION, DEFAULT_PRICE_FORMAT, DEFAULT_PRODUCT_CARD, DEFAULT_PRODUCT_PAGE, parseMotion, parsePriceFormat, parseFilters, parseProductCard, parseDarkMode, parseFooter, parseHeader, parseProductPage, suggestedDarkColors } from "@/lib/theme-chrome";
 
 /** The client's own settings, in theme form — used whenever the dashboard hasn't set something */
 export function defaultSiteTheme(): SiteTheme {
@@ -47,6 +50,11 @@ export function defaultSiteTheme(): SiteTheme {
       headingWeight: 700,
       lineHeight: 1.6,
       headingLetterSpacing: 0,
+      arabicCleanSpacing: true,
+      arabicLineHeight: 1.8,
+      arabicSmallSize: 13,
+      arabicDigits: "latn",
+      arabicBrandFont: { name: "", light: "", regular: "", medium: "", bold: "" },
     },
     layout: {
       containerWidth: 1280,
@@ -57,6 +65,9 @@ export function defaultSiteTheme(): SiteTheme {
       productImageRatio: "square",
       gridColumns: clientConfig.layout.gridColumns,
       card: { ...DEFAULT_PRODUCT_CARD },
+      motion: { ...DEFAULT_MOTION },
+      pageTitle: "bold",
+      priceFormat: { ...DEFAULT_PRICE_FORMAT },
     },
     // Top bar and footer options (dashboard → Header / Footer). Defaults = the original design
     header: structuredClone(DEFAULT_HEADER),
@@ -112,9 +123,14 @@ export function mergeTheme(base: SiteTheme, incoming: Partial<SiteTheme> | null 
       latinFont: oneOf<LatinFont>(ty.latinFont, LATIN_FONTS, base.typography.latinFont),
       latinHeadingFont: oneOf<LatinFont>(ty.latinHeadingFont, LATIN_FONTS, base.typography.latinHeadingFont),
       baseSize: num(ty.baseSize, 14, 18, base.typography.baseSize),
-      headingWeight: oneOf(ty.headingWeight, [400, 500, 600, 700, 800] as const, base.typography.headingWeight),
+      headingWeight: oneOf(ty.headingWeight, [300, 400, 500, 600, 700, 800] as const, base.typography.headingWeight),
       lineHeight: num(ty.lineHeight, 1.2, 2, base.typography.lineHeight),
       headingLetterSpacing: num(ty.headingLetterSpacing, -0.02, 0.1, base.typography.headingLetterSpacing),
+      arabicCleanSpacing: typeof ty.arabicCleanSpacing === "boolean" ? ty.arabicCleanSpacing : base.typography.arabicCleanSpacing,
+      arabicLineHeight: num(ty.arabicLineHeight, 1.4, 2.2, base.typography.arabicLineHeight),
+      arabicSmallSize: num(ty.arabicSmallSize, 11, 15, base.typography.arabicSmallSize),
+      arabicDigits: ty.arabicDigits === "arab" ? "arab" : "latn",
+      arabicBrandFont: parseBrandFont(ty.arabicBrandFont),
     },
     layout: {
       containerWidth: oneOf(l.containerWidth, [1152, 1280, 1440, 1600] as const, base.layout.containerWidth),
@@ -126,6 +142,10 @@ export function mergeTheme(base: SiteTheme, incoming: Partial<SiteTheme> | null 
       gridColumns: oneOf(l.gridColumns, [3, 4, 5] as const, base.layout.gridColumns),
       // Product cards (Theme & design → Layout → Product cards). Missing in older themes → defaults
       card: l.card ? parseProductCard(l.card) : base.layout.card,
+      // Scroll animation / picture zoom (Layout → Motion). Missing → off
+      motion: parseMotion(l.motion),
+      pageTitle: l.pageTitle === "editorial" ? "editorial" : "bold",
+      priceFormat: parsePriceFormat(l.priceFormat),
     },
     // Missing (theme saved before these existed) → defaults; every value is checked in lib/theme-chrome.ts
     header: incoming.header ? parseHeader(incoming.header) : base.header,
@@ -138,10 +158,27 @@ export function mergeTheme(base: SiteTheme, incoming: Partial<SiteTheme> | null 
   };
 }
 
+/** Brand Arabic font files: only site paths or https addresses, no characters that could break the CSS */
+const fontUrl = (v: unknown) => (typeof v === "string" && v.length <= 500 && /^(\/(?!\/)|https?:\/\/)[^\s"'()<>\\]+$/.test(v) ? v : "");
+function parseBrandFont(input: unknown): SiteTheme["typography"]["arabicBrandFont"] {
+  const f = (input && typeof input === "object" ? input : {}) as Record<string, unknown>;
+  const name = typeof f.name === "string" ? f.name.replace(/[^\p{L}\p{N} -]/gu, "").slice(0, 40) : "";
+  return { name, light: fontUrl(f.light), regular: fontUrl(f.regular), medium: fontUrl(f.medium), bold: fontUrl(f.bold) };
+}
+
+/** Saved looks per client (NEXT_PUBLIC_CLIENT_ID). Used under whatever the dashboard publishes */
+const SAVED_THEMES: Record<string, unknown> = { masi: masiSavedTheme };
+
 export const getSiteTheme = cache(async (): Promise<SiteTheme> => {
-  const base = defaultSiteTheme();
+  // Client settings → the saved look → what the dashboard published (each one only fills / overrides what it has)
+  const base = mergeTheme(defaultSiteTheme(), (SAVED_THEMES[process.env.NEXT_PUBLIC_CLIENT_ID ?? ""] ?? null) as Partial<SiteTheme> | null);
   try {
-    return mergeTheme(base, await api.getTheme());
+    const theme = mergeTheme(base, await api.getTheme());
+    // Digits used by lib/format.ts on Arabic pages (server side)
+    setArabicDigits(theme.typography.arabicDigits);
+    // One price look for the whole site (lib/format.ts → formatPrice)
+    setPriceFormat(theme.layout.priceFormat);
+    return theme;
   } catch (e) {
     unstable_rethrow(e); // let Next.js handle its own signals (e.g. "render this page per request")
     console.error("[theme] could not load the theme, using defaults", e);

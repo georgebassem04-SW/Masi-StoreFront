@@ -56,6 +56,11 @@ import type { ArabicFont, LatinFont, ThemeTypography } from "@/types";
 /*
  * ===== CLIENT'S OWN FONTS (files in public/fonts/<client>/) =====
  * MASI: Helvetica Now Display (text) + ABC Arizona Flare (headings and the italic words).
+ *   Every weight is a real file, so bold text uses the real Bold (never a fake, thickened copy):
+ *   - Helvetica Now Display: all 10 weights + italics (Hairline 50 · Thin 100 · Extra Light 200 · Light 300 · Regular 400 ·
+ *     Medium 500 · Bold 700 · Extra Bold 800 · Black 900 · Extra Black 950). Semi-bold (600) shows the real Bold.
+ *   - ABC Arizona Flare: one "variable" file per style that holds every weight from Thin 200 to Bold 700
+ *     (made from the client's ABCArizonaFlareVariable-Trial.ttf).
  * LICENCE: both are paid fonts — a web licence is needed before going live (Arizona Flare here is the trial file).
  * next/font/local also needs the paths written out in full in each call.
  */
@@ -65,11 +70,26 @@ const helveticaNow = localFont({
   variable: "--font-latin",
   fallback: ["Inter", "system-ui", "sans-serif"],
   src: [
+    { path: "../public/fonts/masi/HelveticaNowDisplay-Hairline.woff2", weight: "50", style: "normal" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-HairlineI.woff2", weight: "50", style: "italic" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-Thin.woff2", weight: "100", style: "normal" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-ThinIta.woff2", weight: "100", style: "italic" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-ExtLt.woff2", weight: "200", style: "normal" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-ExtLtIta.woff2", weight: "200", style: "italic" },
     { path: "../public/fonts/masi/HelveticaNowDisplay-Light.woff2", weight: "300", style: "normal" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-LightIta.woff2", weight: "300", style: "italic" },
     { path: "../public/fonts/masi/HelveticaNowDisplay-Regular.woff2", weight: "400", style: "normal" },
     { path: "../public/fonts/masi/HelveticaNowDisplay-RegIta.woff2", weight: "400", style: "italic" },
     { path: "../public/fonts/masi/HelveticaNowDisplay-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-MedIta.woff2", weight: "500", style: "italic" },
     { path: "../public/fonts/masi/HelveticaNowDisplay-Bold.woff2", weight: "700", style: "normal" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-BoldIta.woff2", weight: "700", style: "italic" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-ExtraBold.woff2", weight: "800", style: "normal" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-ExtBdIta.woff2", weight: "800", style: "italic" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-Black.woff2", weight: "900", style: "normal" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-BlackIta.woff2", weight: "900", style: "italic" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-ExtBlk.woff2", weight: "950", style: "normal" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-ExtBlkIta.woff2", weight: "950", style: "italic" },
   ],
 });
 const helveticaNowH = localFont({
@@ -78,11 +98,79 @@ const helveticaNowH = localFont({
   variable: "--font-display",
   fallback: ["Inter", "system-ui", "sans-serif"],
   src: [
+    { path: "../public/fonts/masi/HelveticaNowDisplay-Hairline.woff2", weight: "50", style: "normal" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-HairlineI.woff2", weight: "50", style: "italic" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-Thin.woff2", weight: "100", style: "normal" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-ThinIta.woff2", weight: "100", style: "italic" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-ExtLt.woff2", weight: "200", style: "normal" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-ExtLtIta.woff2", weight: "200", style: "italic" },
     { path: "../public/fonts/masi/HelveticaNowDisplay-Light.woff2", weight: "300", style: "normal" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-LightIta.woff2", weight: "300", style: "italic" },
     { path: "../public/fonts/masi/HelveticaNowDisplay-Regular.woff2", weight: "400", style: "normal" },
     { path: "../public/fonts/masi/HelveticaNowDisplay-RegIta.woff2", weight: "400", style: "italic" },
     { path: "../public/fonts/masi/HelveticaNowDisplay-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-MedIta.woff2", weight: "500", style: "italic" },
     { path: "../public/fonts/masi/HelveticaNowDisplay-Bold.woff2", weight: "700", style: "normal" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-BoldIta.woff2", weight: "700", style: "italic" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-ExtraBold.woff2", weight: "800", style: "normal" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-ExtBdIta.woff2", weight: "800", style: "italic" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-Black.woff2", weight: "900", style: "normal" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-BlackIta.woff2", weight: "900", style: "italic" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-ExtBlk.woff2", weight: "950", style: "normal" },
+    { path: "../public/fonts/masi/HelveticaNowDisplay-ExtBlkIta.woff2", weight: "950", style: "italic" },
+  ],
+});
+/*
+ * Juana (MASI's chosen serif): 8 weights, each with its italic — Thin 100 · Extra Light 200 · Light 300 · Regular 400 ·
+ * Medium 500 · Semi-bold 600 · Bold 700 · Black 900. Bold text uses the real Bold file.
+ * Made from the client's "Juana Fixed Files". LICENCE: demo files — a web licence is needed before going live.
+ */
+const juana = localFont({
+  display: "swap",
+  preload: false,
+  variable: "--font-latin",
+  fallback: ["Georgia", "serif"],
+  src: [
+    { path: "../public/fonts/masi/Juana-Thin.woff2", weight: "100", style: "normal" },
+    { path: "../public/fonts/masi/Juana-ThinItalic.woff2", weight: "100", style: "italic" },
+    { path: "../public/fonts/masi/Juana-ExtraLight.woff2", weight: "200", style: "normal" },
+    { path: "../public/fonts/masi/Juana-ExtraLightItalic.woff2", weight: "200", style: "italic" },
+    { path: "../public/fonts/masi/Juana-Light.woff2", weight: "300", style: "normal" },
+    { path: "../public/fonts/masi/Juana-LightItalic.woff2", weight: "300", style: "italic" },
+    { path: "../public/fonts/masi/Juana-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../public/fonts/masi/Juana-RegularItalic.woff2", weight: "400", style: "italic" },
+    { path: "../public/fonts/masi/Juana-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../public/fonts/masi/Juana-MediumItalic.woff2", weight: "500", style: "italic" },
+    { path: "../public/fonts/masi/Juana-SemiBold.woff2", weight: "600", style: "normal" },
+    { path: "../public/fonts/masi/Juana-SemiBoldItalic.woff2", weight: "600", style: "italic" },
+    { path: "../public/fonts/masi/Juana-Bold.woff2", weight: "700", style: "normal" },
+    { path: "../public/fonts/masi/Juana-BoldItalic.woff2", weight: "700", style: "italic" },
+    { path: "../public/fonts/masi/Juana-Black.woff2", weight: "900", style: "normal" },
+    { path: "../public/fonts/masi/Juana-BlackItalic.woff2", weight: "900", style: "italic" },
+  ],
+});
+const juanaH = localFont({
+  display: "swap",
+  preload: false,
+  variable: "--font-display",
+  fallback: ["Georgia", "serif"],
+  src: [
+    { path: "../public/fonts/masi/Juana-Thin.woff2", weight: "100", style: "normal" },
+    { path: "../public/fonts/masi/Juana-ThinItalic.woff2", weight: "100", style: "italic" },
+    { path: "../public/fonts/masi/Juana-ExtraLight.woff2", weight: "200", style: "normal" },
+    { path: "../public/fonts/masi/Juana-ExtraLightItalic.woff2", weight: "200", style: "italic" },
+    { path: "../public/fonts/masi/Juana-Light.woff2", weight: "300", style: "normal" },
+    { path: "../public/fonts/masi/Juana-LightItalic.woff2", weight: "300", style: "italic" },
+    { path: "../public/fonts/masi/Juana-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../public/fonts/masi/Juana-RegularItalic.woff2", weight: "400", style: "italic" },
+    { path: "../public/fonts/masi/Juana-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../public/fonts/masi/Juana-MediumItalic.woff2", weight: "500", style: "italic" },
+    { path: "../public/fonts/masi/Juana-SemiBold.woff2", weight: "600", style: "normal" },
+    { path: "../public/fonts/masi/Juana-SemiBoldItalic.woff2", weight: "600", style: "italic" },
+    { path: "../public/fonts/masi/Juana-Bold.woff2", weight: "700", style: "normal" },
+    { path: "../public/fonts/masi/Juana-BoldItalic.woff2", weight: "700", style: "italic" },
+    { path: "../public/fonts/masi/Juana-Black.woff2", weight: "900", style: "normal" },
+    { path: "../public/fonts/masi/Juana-BlackItalic.woff2", weight: "900", style: "italic" },
   ],
 });
 const arizonaFlare = localFont({
@@ -91,10 +179,8 @@ const arizonaFlare = localFont({
   variable: "--font-latin",
   fallback: ["Georgia", "serif"],
   src: [
-    { path: "../public/fonts/masi/ArizonaFlare-Light.woff2", weight: "300", style: "normal" },
-    { path: "../public/fonts/masi/ArizonaFlare-LightItalic.woff2", weight: "300", style: "italic" },
-    { path: "../public/fonts/masi/ArizonaFlare-Regular.woff2", weight: "400", style: "normal" },
-    { path: "../public/fonts/masi/ArizonaFlare-Italic.woff2", weight: "400", style: "italic" },
+    { path: "../public/fonts/masi/ArizonaFlare-Variable.woff2", weight: "200 700", style: "normal" },
+    { path: "../public/fonts/masi/ArizonaFlare-VariableItalic.woff2", weight: "200 700", style: "italic" },
   ],
 });
 const arizonaFlareH = localFont({
@@ -103,10 +189,8 @@ const arizonaFlareH = localFont({
   variable: "--font-display",
   fallback: ["Georgia", "serif"],
   src: [
-    { path: "../public/fonts/masi/ArizonaFlare-Light.woff2", weight: "300", style: "normal" },
-    { path: "../public/fonts/masi/ArizonaFlare-LightItalic.woff2", weight: "300", style: "italic" },
-    { path: "../public/fonts/masi/ArizonaFlare-Regular.woff2", weight: "400", style: "normal" },
-    { path: "../public/fonts/masi/ArizonaFlare-Italic.woff2", weight: "400", style: "italic" },
+    { path: "../public/fonts/masi/ArizonaFlare-Variable.woff2", weight: "200 700", style: "normal" },
+    { path: "../public/fonts/masi/ArizonaFlare-VariableItalic.woff2", weight: "200 700", style: "italic" },
   ],
 });
 
@@ -148,7 +232,8 @@ const changaH = Changa({ display: "swap", preload: false, subsets: ["arabic", "l
 /* ===== ENGLISH — body ===== */
 const inter = Inter({ display: "swap", preload: false, subsets: ["latin"], variable: "--font-latin" });
 const playfair = Playfair_Display({ display: "swap", preload: false, subsets: ["latin"], variable: "--font-latin" });
-const cormorant = Cormorant_Garamond({ display: "swap", preload: false, subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-latin" });
+// Cormorant Garamond is now a "variable" font on Google: asking for single weights breaks the build (Turbopack), so it loads all weights in one file
+const cormorant = Cormorant_Garamond({ display: "swap", preload: false, subsets: ["latin"], variable: "--font-latin" });
 const montserrat = Montserrat({ display: "swap", preload: false, subsets: ["latin"], variable: "--font-latin" });
 const lora = Lora({ display: "swap", preload: false, subsets: ["latin"], variable: "--font-latin" });
 const poppins = Poppins({ display: "swap", preload: false, subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-latin" });
@@ -165,7 +250,7 @@ const raleway = Raleway({ display: "swap", preload: false, subsets: ["latin"], v
 /* ===== ENGLISH — headings ===== */
 const interH = Inter({ display: "swap", preload: false, subsets: ["latin"], variable: "--font-display" });
 const playfairH = Playfair_Display({ display: "swap", preload: false, subsets: ["latin"], variable: "--font-display" });
-const cormorantH = Cormorant_Garamond({ display: "swap", preload: false, subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-display" });
+const cormorantH = Cormorant_Garamond({ display: "swap", preload: false, subsets: ["latin"], variable: "--font-display" });
 const montserratH = Montserrat({ display: "swap", preload: false, subsets: ["latin"], variable: "--font-display" });
 const loraH = Lora({ display: "swap", preload: false, subsets: ["latin"], variable: "--font-display" });
 const poppinsH = Poppins({ display: "swap", preload: false, subsets: ["latin"], weight: ["500", "600", "700", "800"], variable: "--font-display" });
@@ -197,7 +282,7 @@ const arabicHeading: Record<ArabicFont, Font> = {
   alexandria: alexandriaH,
   changa: changaH,
 };
-const latinBody: Record<LatinFont, Font> = { inter, playfair, cormorant, montserrat, lora, poppins, cinzel, bodoniModa, ebGaramond, libreBaskerville, marcellus, dmSerifDisplay, jost, raleway, helveticaNow, arizonaFlare };
+const latinBody: Record<LatinFont, Font> = { inter, playfair, cormorant, montserrat, lora, poppins, cinzel, bodoniModa, ebGaramond, libreBaskerville, marcellus, dmSerifDisplay, jost, raleway, helveticaNow, arizonaFlare, juana };
 const latinHeading: Record<LatinFont, Font> = {
   inter: interH,
   playfair: playfairH,
@@ -215,6 +300,7 @@ const latinHeading: Record<LatinFont, Font> = {
   raleway: ralewayH,
   helveticaNow: helveticaNowH,
   arizonaFlare: arizonaFlareH,
+  juana: juanaH,
 };
 
 /** CSS classes that switch on the 4 chosen fonts (unknown keys fall back to Cairo / Inter / Playfair) */

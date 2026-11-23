@@ -11,6 +11,8 @@ import type { LocalizedText, MediaImage, MediaVideo } from "./common";
  */
 interface BaseSection {
   id: string;
+  /** Address of this block inside the page, for links like /about#craft (letters, digits, "-"). Optional */
+  anchor?: string;
   /** Lets the dashboard hide a section without deleting it */
   isActive: boolean;
   sortOrder: number;
@@ -74,6 +76,8 @@ export interface HeroSection extends BaseSection {
      *               the first button as a small word with a thin line under it ("DISCOVER"). The title is kept for search engines only.
      */
     look?: "classic" | "editorial";
+    /** "editorial" look: how wide the small words may run, in px (default 1040 — two lines on a computer, like the reference) */
+    textWidth?: number;
     slides: {
       image: MediaImage;
       mobileImage?: MediaImage;
@@ -192,7 +196,36 @@ export interface PageHeroSection extends BaseSection {
     background?: string;
     /** Positions and colours (lib/hero-style.ts) */
     style?: HeroStyleInput;
+    /** "banner" (default) = title banner · "cover" = magazine cover (Our Story): top line, giant word, chapters in the corners */
+    look?: "banner" | "cover";
+    /** The "cover" look's parts (the subtitle is the short line in the middle) */
+    cover?: PageHeroCover;
   };
+}
+
+/** One chapter on the cover: "Founded in 1963 by the *Erian family*" + "Heritage & Legacy — P. 01" → a part of the page */
+export interface PageHeroChapter {
+  title: LocalizedText;
+  label?: LocalizedText;
+  href: string;
+}
+
+/** Magazine cover parts of the page title block */
+export interface PageHeroCover {
+  /** Thin line at the top: left · middle · right ("The Heritage Issue" · "Cairo · Est. 1963" · "Edition 2026") */
+  topLeft?: LocalizedText;
+  topCenter?: LocalizedText;
+  topRight?: LocalizedText;
+  /** The giant word over the picture (e.g. MASI) — empty = the page title */
+  word?: LocalizedText;
+  /** Up to 4 chapters: the first two sit bottom-left, the others bottom-right */
+  chapters?: PageHeroChapter[];
+  /** Small brand mark above the link in the middle */
+  badge?: MediaImage;
+  /** Small link in the middle ("Read the issue" → #heritage) */
+  link?: CtaLink;
+  /** Dark shade over the picture, 0–80 (default 35) */
+  shade?: number;
 }
 
 /** Text on one side, image on the other ("Our story") */
@@ -258,6 +291,14 @@ export interface BranchesSection extends BaseSection {
      * "start" = reading-start side (right in Arabic, left in English) · "center" · "end". Missing = "start"
      */
     align?: "start" | "center" | "end";
+    /**
+     * "cards"   = one card per branch (original)
+     * "locator" = store finder like the MASI design: "6 locations", filters (All / Boutiques / Coming soon / Heritage),
+     *             list beside a map, then a story block per store. Missing = "cards"
+     */
+    look?: "cards" | "locator";
+    /** Small line above the title ("Find a store"). Locator look */
+    eyebrow?: LocalizedText;
   };
 }
 
@@ -461,4 +502,17 @@ export interface Branch {
   image?: MediaImage;
   isPickupPoint: boolean;
   sortOrder: number;
+
+  /* ---- Store finder (Branches block → "Store finder" look). All optional ---- */
+  /** Filter group + label: boutique · flagship · new (coming soon) · heritage · private (by appointment) */
+  kind?: "boutique" | "flagship" | "new" | "heritage" | "private";
+  /** Short line under the address ("Since 1977 · Home of the IGI Trophy") */
+  tagline?: LocalizedText;
+  /** Map position (decimal degrees). Empty = not on the map */
+  lat?: number;
+  lng?: number;
+  /** "Book a visit" link (a page, WhatsApp, a form…). Empty = hidden */
+  bookUrl?: string;
+  /** Story block under the map: small line, title, text */
+  story?: { eyebrow: LocalizedText; title: LocalizedText; text: LocalizedText };
 }

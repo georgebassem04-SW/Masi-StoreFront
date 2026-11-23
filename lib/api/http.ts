@@ -31,10 +31,10 @@ async function get<T>(path: string, { revalidate = 60, tags = [], allow404 = fal
 }
 
 /** POST helper for sending data to the dashboard (never cached) */
-async function post<T>(path: string, body: unknown, { acceptErrorBody = false } = {}): Promise<T> {
+async function post<T>(path: string, body: unknown, { acceptErrorBody = false, secret = false } = {}): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...(secret ? { "X-Backend-Secret": process.env.BACKEND_SECRET ?? "" } : {}) },
     body: JSON.stringify(body),
     cache: "no-store",
   });
@@ -118,17 +118,32 @@ export const httpApi: StorefrontApi = {
   getCheckoutOptions: () => get("/storefront/checkout-options", { revalidate: CONTENT, tags: ["checkout-options"] }),
   quoteOrder: (request) => post("/storefront/checkout/quote", request),
   placeOrder: (request) => post("/storefront/orders", request, { acceptErrorBody: true }),
-  getOrder: async (number) => {
-    const res = await fetch(`${BASE_URL}/storefront/orders/${encodeURIComponent(number)}`, { cache: "no-store" });
+  // The backend shows an order only with its link key, or to this server (BACKEND_SECRET) — order numbers are guessable
+  getOrder: async (number, access) => {
+    const key = access && "key" in access ? `?key=${encodeURIComponent(access.key)}` : "";
+    const headers = access && "server" in access ? { "X-Backend-Secret": process.env.BACKEND_SECRET ?? "" } : undefined;
+    const res = await fetch(`${BASE_URL}/storefront/orders/${encodeURIComponent(number)}${key}`, { cache: "no-store", headers });
     if (res.status === 404) return null;
     if (!res.ok) throw new Error(`API ${res.status} on /storefront/orders/${number}`);
+    return res.json();
+  },
+
+  // InstaPay / transfer screenshot (backend shop/orders_payment_proof.py): 404 / 409 / 422 answers carry { ok: false, error }
+  uploadPaymentProof: async (number, key, photo) => {
+    const form = new FormData();
+    form.append("key", key);
+    form.append("photo", new Blob([new Uint8Array(photo.data)], { type: photo.type }), photo.name);
+    const res = await fetch(`${BASE_URL}/storefront/orders/${encodeURIComponent(number)}/payment-proof`, { method: "POST", body: form, cache: "no-store" });
+    if (res.status === 404 || res.status === 409 || res.status === 422) return res.json();
+    if (!res.ok) throw new Error(`API ${res.status} on /storefront/orders/${number}/payment-proof`);
     return res.json();
   },
 
   // Customer accounts. The dashboard answers login/register with { ok, customer, token }.
   registerCustomer: (input) => post("/storefront/customers/register", input, { acceptErrorBody: true }),
   loginCustomer: (input) => post("/storefront/customers/login", input, { acceptErrorBody: true }),
-  loginWithGoogle: (input) => post("/storefront/customers/google", input, { acceptErrorBody: true }),
+  // Google sign-in: the API trusts this profile, so it must come from this server → secret header (BACKEND_SECRET)
+  loginWithGoogle: (input) => post("/storefront/customers/google", input, { acceptErrorBody: true, secret: true }),
   getCustomer: (auth) => authed(auth, "GET", "/storefront/customers/me"),
   updateCustomer: (auth, input) => authed(auth, "PATCH", "/storefront/customers/me", input),
   changePassword: (auth, input) => authed(auth, "POST", "/storefront/customers/me/password", input),

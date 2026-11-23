@@ -42,6 +42,7 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { getSiteTheme } from "@/lib/site-theme";
 import { cn } from "@/lib/utils";
 import { SectionTitle } from "@/components/common/SectionTitle";
+import { ProductMaison, type SiblingProduct } from "@/components/product/ProductMaison";
 
 
 // Browser title, Google description and the image shown when the link is shared (WhatsApp, Facebook)
@@ -73,7 +74,8 @@ export default async function ProductDetailsPage({ params }: PageProps<"/[locale
   const show = view.show;
   const RELATED_COUNT = view.relatedCount;
 
-  const [dict, goldPrices, categories, relatedPage, { contact }, site, offers] = await Promise.all([
+  const maison = view.layout === "maison";
+  const [dict, goldPrices, categories, relatedPage, { contact }, site, offers, groupPage] = await Promise.all([
     getDictionary(locale),
     api.getGoldPrices(),
     api.getCategories(),
@@ -81,6 +83,8 @@ export default async function ProductDetailsPage({ params }: PageProps<"/[locale
     getStoreContact(), // WhatsApp number: dashboard → Settings → Store details
     getSiteOptions(), // show weight: dashboard → Settings → Store details → Website options
     getActiveOffers(), // special offers: dashboard → Gold prices & coupons
+    // "Also available in" (Maison look): the products with the same group code (dashboard → the product)
+    maison && view.alsoAvailable && product.variantGroup ? api.getProducts({ pageSize: 200 }) : Promise.resolve(null),
   ]);
 
   const category = categories.find((c) => c.id === product.categoryId);
@@ -103,6 +107,16 @@ export default async function ProductDetailsPage({ params }: PageProps<"/[locale
     const offer = offerFor(product.id, v.price, offers);
     return offer ? { ...v, offer: { discount: offer.discount, total: offer.total, percent: offer.percent, label: t(offer.label, locale) } } : v;
   });
+
+  // Same piece in other colours: products sharing the group code, the colour line as their name
+  const siblings: SiblingProduct[] = (groupPage?.items ?? [])
+    .filter((x) => x.variantGroup && x.variantGroup === product.variantGroup)
+    .map((x) => ({ slug: x.slug, label: t(x.subtitle, locale) || t(x.name, locale), metal: x.metal, current: x.id === product.id }));
+  const lines = (v?: { ar: string; en: string }) =>
+    t(v, locale)
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
 
   // Structured data so Google can show price and stock in search results
   const jsonLd = {
@@ -152,6 +166,38 @@ export default async function ProductDetailsPage({ params }: PageProps<"/[locale
 
         {/* "Details first" (dashboard → Product page) puts this column before the photos on computers only */}
         <div className={cn(view.imageSide === "end" && "lg:order-first", view.align === "center" && "text-center", view.align === "end" && "text-end")}>
+          {maison ? (
+            /* MAISON look (dashboard → Product page → Look): name in capitals, colour, description, sizes, folding sections */
+            <ProductMaison
+              locale={locale}
+              labels={dict.product}
+              product={{
+                id: product.id,
+                slug: product.slug,
+                sku: product.sku,
+                name: product.name,
+                karat: product.karat,
+                imageUrl: product.images[0]?.url,
+                description: show.description ? t(product.description, locale) : "",
+                subtitle: t(product.subtitle, locale),
+                highlights: lines(product.highlights),
+                details: t(product.details, locale),
+                materials: t(product.materials, locale),
+              }}
+              variants={variants}
+              currency={clientConfig.currency}
+              look={view}
+              showSku={show.sku}
+              showBuyNow={show.buyNow}
+              priceFormat={view.cardPriceFormat ? { symbol: t(themeLayout.card.priceSymbol, locale), decimals: themeLayout.card.priceDecimals } : undefined}
+              checkoutHref={p("/checkout")}
+              cartHref={p("/cart")}
+              siblings={siblings}
+              care={t(view.careText, locale)}
+              shipping={t(view.shippingText, locale)}
+            />
+          ) : (
+          <>
           {/* Name size: dashboard → Product page → Name size (weight follows Theme & design → Fonts) */}
           <h1 className={TITLE_SIZE[view.titleSize]}>{name}</h1>
           {show.sku && (
@@ -186,11 +232,14 @@ export default async function ProductDetailsPage({ params }: PageProps<"/[locale
             checkoutHref={p("/checkout")}
           />
           </div>
+          </>
+          )}
         </div>
       </div>
 
       {/* ===== DESCRIPTION + SPECIFICATIONS ===== */}
-      {(show.description || show.specifications) && (
+      {/* (Maison look: the description is already next to the photos) */}
+      {!maison && (show.description || show.specifications) && (
         <div className={cn("mt-16 grid gap-10", show.description && show.specifications && "lg:grid-cols-2")}>
           {show.description && (
             <section>
@@ -210,7 +259,7 @@ export default async function ProductDetailsPage({ params }: PageProps<"/[locale
       {/* ===== RELATED PRODUCTS ===== */}
       {show.related && related.length > 0 && (
         <section className="mt-20">
-          <SectionTitle title={dict.product.related} href={category ? p(`/categories/${category.slug}`) : p("/products")} linkLabel={dict.product.viewAll} />
+          <SectionTitle title={maison ? dict.product.youMayAlsoLike : dict.product.related} href={category ? p(`/categories/${category.slug}`) : p("/products")} linkLabel={dict.product.viewAll} />
           <div className="product-grid">
             {related.map((r) => (
               <ProductCard key={r.id} product={r} goldPrices={goldPrices} locale={locale} dict={dict} />

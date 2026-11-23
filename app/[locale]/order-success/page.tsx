@@ -1,5 +1,6 @@
 /**
- * PAGE: /[locale]/order-success?order=ORD-123456 — ORDER PLACED
+ * PAGE: /[locale]/order-success?order=ORD-123456&key=… — ORDER PLACED
+ * (the key comes from the backend when the order is placed; without it the order details stay hidden)
  * ------------------------------------------------------------------
  * Shown right after checkout. Loads the order from the dashboard (GET /storefront/orders/<number>)
  * and shows: order number, items, totals, delivery/pickup details, payment instructions
@@ -8,6 +9,8 @@
  * Where to edit:
  *   - Texts (AR/EN)             -> i18n/dictionaries/*.json -> "orderSuccess"
  *   - Bank transfer details     -> mock-data/checkout-options.json -> paymentMethods -> instructions
+ *   - INSTAPAY: account number + "Copy" + transfer screenshot upload -> dashboard → Shipping & payment → the method
+ *     (accountNumber / askProof); components/checkout/PaymentAccountBox.tsx + PaymentProofUpload.tsx
  */
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -17,8 +20,10 @@ import type { Locale } from "@/types";
 import { api } from "@/lib/api";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { localePath } from "@/i18n/config";
-import { formatDate, formatPrice, formatWeight, t } from "@/lib/format";
+import { fill, formatDate, formatPrice, formatWeight, t } from "@/lib/format";
 import { Button } from "@/components/ui/button";
+import { PaymentAccountBox } from "@/components/checkout/PaymentAccountBox";
+import { PaymentProofUpload } from "@/components/checkout/PaymentProofUpload";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/order-success">): Promise<Metadata> {
   const dict = await getDictionary((await params).locale as Locale);
@@ -29,10 +34,12 @@ export default async function OrderSuccessPage({ params, searchParams }: PagePro
   const locale = (await params).locale as Locale;
   const raw = (await searchParams).order;
   const number = typeof raw === "string" ? raw : undefined;
+  const rawKey = (await searchParams).key;
+  const key = typeof rawKey === "string" ? rawKey : "";
 
   const [dict, order, options, branches] = await Promise.all([
     getDictionary(locale),
-    number ? api.getOrder(number) : Promise.resolve(null),
+    number && key ? api.getOrder(number, { key }) : Promise.resolve(null),
     api.getCheckoutOptions(),
     api.getBranches(),
   ]);
@@ -69,10 +76,42 @@ export default async function OrderSuccessPage({ params, searchParams }: PagePro
   const payment = options.paymentMethods.find((m) => m.id === order.paymentMethodId);
   const branch = branches.find((b) => b.id === order.pickupBranchId);
   const isPickup = order.deliveryMethod === "store_pickup";
+  // InstaPay / bank transfer: still waiting for the money?
+  const transfer = order.paymentMethod === "bank_transfer";
+  const paid = order.paymentStatus === "paid";
+  const waitingTransfer = transfer && !paid && order.status !== "cancelled" && ["pending", "awaiting_transfer", "failed"].includes(order.paymentStatus);
+  const proofsSent = order.paymentProofs?.length ?? 0;
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-16">
       {header}
+
+      {/* ===== INSTAPAY / BANK TRANSFER: amount, account number to copy, screenshot upload ===== */}
+      {transfer && paid && (
+        <p role="status" className="mt-8 flex items-center gap-2 rounded-xl bg-emerald-50 p-4 text-sm font-medium text-emerald-800">
+          <CheckCircle2 className="size-5 shrink-0" />
+          {L.proof.paid}
+        </p>
+      )}
+      {waitingTransfer && payment?.accountNumber && (
+        <div className="mt-8 space-y-3">
+          <h2 className="font-semibold">{fill(L.payNow, { method: t(payment.label, locale) })}</h2>
+          <PaymentAccountBox
+            accountNumber={payment.accountNumber}
+            accountName={payment.accountName}
+            appUrl={payment.appUrl}
+            amount={price(order.total)}
+            labels={dict.checkout.payAccount}
+          />
+          <p className="text-sm text-muted-foreground">{L.payWithNumber.replace("{number}", order.number)}</p>
+        </div>
+      )}
+      {waitingTransfer && payment?.askProof && (
+        <div className="mt-4">
+          <PaymentProofUpload number={order.number} orderKey={key} sentCount={proofsSent} labels={L.proof} />
+          {proofsSent > 0 && <p className="mt-2 text-sm text-muted-foreground">{L.proof.waiting}</p>}
+        </div>
+      )}
 
       {/* ===== BANK TRANSFER / PAYMENT INSTRUCTIONS ===== */}
       {payment?.instructions && (
