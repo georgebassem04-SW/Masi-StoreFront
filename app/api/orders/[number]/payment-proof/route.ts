@@ -15,7 +15,7 @@ import { photoType } from "@/lib/validation/custom-request";
 const MAX_MB = 5;
 const STATUS = { not_found: 404, not_allowed: 409, too_many: 409, photo: 422 } as const;
 
-export async function POST(request: NextRequest, ctx: RouteContext<"/api/orders/[number]/payment-proof">) {
+export async function POST(request: NextRequest, ctx: { params: Promise<{ number: string }> }) {
   const { number } = await ctx.params;
   const form = await request.formData().catch(() => null);
   const key = form?.get("key");

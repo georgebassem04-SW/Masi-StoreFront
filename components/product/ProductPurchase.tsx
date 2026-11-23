@@ -65,7 +65,7 @@ interface Props {
   /** Look and order of the buttons + text position (dashboard → Product page). Nothing passed = the original design */
   look?: Pick<
     ThemeProductPage,
-    "buttons" | "buttonOrder" | "buttonsLayout" | "buttonSize" | "buttonShape" | "align" | "priceSize" | "optionsStyle" | "factsBox" | "quantityOwnRow" | "divider" | "iconEnd"
+    "buttons" | "buttonOrder" | "buttonsLayout" | "buttonSize" | "buttonShape" | "align" | "priceSize" | "optionsStyle" | "factsBox" | "quantityOwnRow" | "divider" | "iconEnd" | "bag"
   >;
   /** Price look shared with the product cards ("LE" + piastres). Nothing passed = normal currency format */
   priceFormat?: { symbol: string; decimals: boolean };
