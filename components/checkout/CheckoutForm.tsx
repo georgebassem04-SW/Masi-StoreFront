@@ -6,6 +6,9 @@
  *   2. Delivery          (home delivery -> area + address  |  store pickup -> branch)
  *   3. Payment           (only the methods allowed for this delivery choice and order total)
  *   + notes, terms checkbox, coupon (in the summary)
+ *   InstaPay / bank transfer with "ask for screenshot" on: the customer must add the transfer screenshot
+ *   here before "Place order" works; it is sent right after the order is created (same route as the
+ *   order page: /api/orders/<number>/payment-proof). If that send fails, the order page still offers the upload.
  *
  * Flow:
  *   - The total is always calculated on the server (useCheckoutQuote -> /api/checkout/quote)
@@ -27,7 +30,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertTriangle, Info, ShoppingBag, Store, Truck } from "lucide-react";
+import { AlertTriangle, ImageUp, Info, ShoppingBag, Store, Truck } from "lucide-react";
 import type { Address, CheckoutOptions, Locale, LocalizedText, PlacedOrder } from "@/types";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import { checkoutFormSchema, type CheckoutFormInput } from "@/lib/validation/checkout";
@@ -73,6 +76,9 @@ interface Props {
 }
 
 const FORM_ID = "checkout-form";
+// Transfer screenshot rules (same as components/checkout/PaymentProofUpload.tsx and the payment-proof route)
+const PROOF_MAX_MB = 5;
+const PROOF_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export function CheckoutForm({ customer, locale, labels, productLabels, options, branches, storePickupEnabled, guestCheckout, currency }: Props) {
   const router = useRouter();
@@ -88,6 +94,25 @@ export function CheckoutForm({ customer, locale, labels, productLabels, options,
   const [submitError, setSubmitError] = useState<"priceChanged" | "errorGeneric" | "invalidPayment" | null>(null);
   // One id per checkout attempt, so a double click never creates two orders
   const idempotencyKey = useRef<string>(crypto.randomUUID());
+  // Transfer screenshot (InstaPay / bank transfer)
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofPreview, setProofPreview] = useState<string | null>(null);
+  const [proofError, setProofError] = useState<"proofRequired" | "proofBad" | null>(null);
+  const proofBox = useRef<HTMLDivElement>(null);
+  const proofInput = useRef<HTMLInputElement>(null);
+  function pickProof(f: File | undefined) {
+    if (!f) return;
+    if (!PROOF_TYPES.includes(f.type) || f.size > PROOF_MAX_MB * 1024 * 1024) {
+      setProofError("proofBad");
+      return;
+    }
+    setProofError(null);
+    setProofFile(f);
+    setProofPreview((old) => {
+      if (old) URL.revokeObjectURL(old);
+      return URL.createObjectURL(f);
+    });
+  }
 
   const zones = options.shippingZones.filter((z) => z.isActive);
 
@@ -160,6 +185,12 @@ export function CheckoutForm({ customer, locale, labels, productLabels, options,
   async function onSubmit(values: CheckoutFormInput) {
     if (!quote) return;
     setSubmitError(null);
+    const needsProof = !!payments.find((m) => m.id === values.paymentMethodId)?.askProof;
+    if (needsProof && !proofFile) {
+      setProofError("proofRequired");
+      proofBox.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     try {
       const res = await fetch("/api/checkout/order", {
         method: "POST",
@@ -177,6 +208,13 @@ export function CheckoutForm({ customer, locale, labels, productLabels, options,
       const data = (await res.json()) as Answer;
 
       if (data.ok) {
+        // Send the transfer screenshot with the new order (if it fails, the order page asks again)
+        if (needsProof && proofFile && data.orderKey) {
+          const proof = new FormData();
+          proof.append("key", data.orderKey);
+          proof.append("photo", proofFile);
+          await fetch(`/api/orders/${encodeURIComponent(data.orderNumber)}/payment-proof`, { method: "POST", body: proof }).catch(() => null);
+        }
         clearCart();
         if (data.paymentRedirectUrl) {
           window.location.href = data.paymentRedirectUrl; // card payment page
@@ -392,7 +430,31 @@ export function CheckoutForm({ customer, locale, labels, productLabels, options,
             return (
               <div className="space-y-2">
                 <PaymentAccountBox accountNumber={chosen.accountNumber} accountName={chosen.accountName} appUrl={chosen.appUrl} labels={labels.payAccount} />
-                {chosen.askProof && <p className="text-sm text-muted-foreground">{labels.payAccount.proofLater}</p>}
+                {chosen.askProof && (
+                  <div ref={proofBox} className={cn("space-y-3 rounded-lg border p-4", proofError === "proofRequired" && "border-destructive")}>
+                    <p className="font-medium">{labels.payAccount.proofTitle}</p>
+                    <p className="text-sm text-muted-foreground">{labels.payAccount.proofHint}</p>
+                    <input ref={proofInput} type="file" accept={PROOF_TYPES.join(",")} className="sr-only" onChange={(e) => pickProof(e.target.files?.[0])} />
+                    <button
+                      type="button"
+                      onClick={() => proofInput.current?.click()}
+                      className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-sm text-muted-foreground transition-colors hover:border-primary"
+                    >
+                      {proofPreview ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- local preview of the customer's own picture
+                        <img src={proofPreview} alt="" className="max-h-56 rounded-md object-contain" />
+                      ) : (
+                        <ImageUp className="size-8 text-primary" />
+                      )}
+                      <span className="font-medium text-foreground">{proofFile ? `${proofFile.name} · ${labels.payAccount.proofChange}` : labels.payAccount.proofChoose}</span>
+                    </button>
+                    {proofError && (
+                      <p role="alert" className="text-sm text-destructive">
+                        {labels.payAccount[proofError]}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })()}

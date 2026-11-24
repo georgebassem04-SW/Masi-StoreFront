@@ -325,7 +325,13 @@
       "copy": "Copy",
       "copied": "Copied!",
       "openApp": "Open InstaPay",
-      "proofLater": "After placing your order, you'll upload a screenshot of the transfer on the order page."
+      "proofLater": "After placing your order, you'll upload a screenshot of the transfer on the order page.",
+      "proofTitle": "Upload the transfer screenshot",
+      "proofHint": "Transfer the amount first, then add a screenshot of the transfer. JPG, PNG or WebP, up to 5 MB.",
+      "proofChoose": "Choose screenshot",
+      "proofChange": "Change",
+      "proofRequired": "Please upload the transfer screenshot to place your order.",
+      "proofBad": "Please choose a picture (JPG, PNG or WebP) up to 5 MB."
     }
   },
   "orderSuccess": {
